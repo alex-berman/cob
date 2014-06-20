@@ -14,4 +14,4 @@ PORT = 57120
 target = OscSender(PORT)
 sound = args.sound
 pan = args.pan
-target.send("/startPad", sound, pan, args.fade, args.gain)
+target.send("/loop", sound, pan, args.fade, args.gain)
