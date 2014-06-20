@@ -1,5 +1,6 @@
 import argparse
 import time
+from simple_osc_sender import OscSender
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-sound', type=str,
@@ -8,9 +9,8 @@ parser.add_argument('-pan', type=float, default=0.)
 parser.add_argument('-fade', type=float, default=1.)
 args = parser.parse_args()
 
-import liblo
 PORT = 57120
-target = liblo.Address(PORT)
+target = OscSender(PORT)
 sound = args.sound
 pan = args.pan
-liblo.send(target, "/startPad", sound, pan, args.fade)
+target.send("/startPad", sound, pan, args.fade)
