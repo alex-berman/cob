@@ -7,10 +7,11 @@ parser.add_argument('-sound', type=str,
                     default="water/Sound 2 mindre rinn.wav")
 parser.add_argument('-pan', type=float, default=0.)
 parser.add_argument('-fade', type=float, default=1.)
+parser.add_argument("-gain", type=float, default=0.)
 args = parser.parse_args()
 
 PORT = 57120
 target = OscSender(PORT)
 sound = args.sound
 pan = args.pan
-target.send("/startPad", sound, pan, args.fade)
+target.send("/startPad", sound, pan, args.fade, args.gain)
