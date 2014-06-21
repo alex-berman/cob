@@ -58,10 +58,10 @@ class SynthController:
         self._subscribe_to_info()
 
     def _subscribe_to_info(self):
-        self._load_results = {}
+        self._sounds_info = {}
         if not self._sc_listener:
             self._sc_listener = OscReceiver(proto=liblo.TCP, name="SynthController")
-            self._sc_listener.add_method("/loaded", "si", self._handle_loaded)
+            self._sc_listener.add_method("/loaded", "sii", self._handle_loaded)
             self._sc_listener.start()
         self._send("/info_subscribe", self._sc_listener.port)
 
@@ -92,9 +92,8 @@ class SynthController:
     def _get_load_result(self, filename, timeout=10.0):
         t = time.time()
         while True:
-            if filename in self._load_results:
-                result = self._load_results[filename]
-                del self._load_results[filename]
+            if filename in self._sounds_info:
+                result = self._sounds_info[filename]
                 return result
             elif (time.time() - t) > timeout:
                 return None
@@ -103,12 +102,19 @@ class SynthController:
                 time.sleep(0.01)
 
     def _handle_loaded(self,path, args, types, src, data):
-        filename, result = args
-        print "got /loaded %s" % args #TEMP
-        self._load_results[filename] = result
+        filename, num_frames, sample_rate = args
+        print "got /loaded %s" % args
+        duration = float(num_frames) / sample_rate
+        print "duration=%s" % duration
+        self._sounds_info[filename] = {
+            "duration": duration
+            }
 
-    def play_loop(self, sound, pan=0, fade=0.1, gain=0):
-        self._send("/loop", sound, pan, fade, gain)
+    def play(self, sound, pan, fade, gain, looped):
+        self._send("/play", sound, pan, fade, gain, looped)
+
+    def get_duration(self, sound):
+        return self._sounds_info[sound]["duration"]
 
     def _send(self, command, *args):
         with self._lock:

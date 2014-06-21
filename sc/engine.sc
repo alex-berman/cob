@@ -25,7 +25,7 @@ OSCresponder.new(nil, "/load",
 		  if(buf.numFrames > 0, {
 			  ~sounds[filename] = buf;
 			  if(~info_subscriber != nil, {
-				  ~info_subscriber.sendMsg("/loaded", filename, buf.numFrames);
+				  ~info_subscriber.sendMsg("/loaded", filename, buf.numFrames, buf.sampleRate);
 			  });
 		  }, {
 			  buf.free;
@@ -33,25 +33,35 @@ OSCresponder.new(nil, "/load",
 	  });
   }).add;
 
-SynthDef(\loop, {
-	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1;
-	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf), loop:1.0);
+SynthDef(\play_stereo, {
+	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1, looped=0;
+	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf), loop:looped);
 	sig = Balance2.ar(sig[0], sig[1], pan) * gain;
 	sig = EnvGen.ar(Env.asr(fadein, amp, fadeout, 'linear'), gate, doneAction:2) * sig;
 	Out.ar(out, sig);
 	Out.ar(~reverb_bus, sig);
 }).send(s);
 
-OSCresponder.new(nil, "/loop", {
+SynthDef(\play_mono, {
+	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1, looped=0;
+	var sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf), loop:looped);
+	sig = Pan2.ar(sig, pan) * gain;
+	sig = EnvGen.ar(Env.asr(fadein, amp, fadeout, 'linear'), gate, doneAction:2) * sig;
+	Out.ar(out, sig);
+	Out.ar(~reverb_bus, sig);
+}).send(s);
+
+OSCresponder.new(nil, "/play", {
 	arg t, r, msg;
     var name = msg[1].asString;
     var pan = msg[2];
     var fade = msg[3];
 	var gain_dB = msg[4];
+	var looped = msg[5];
     var buf;
     var channel = 0;
 	var gain = gain_dB.dbamp;
-    "received /loop".postln;
+    "received /play".postln;
     "name:".post; name.postln;
     "pan:".post; pan.postln;
     "fade:".post; fade.postln;
@@ -63,12 +73,27 @@ OSCresponder.new(nil, "/loop", {
 		name.postln;
 	}, {
 		"numSynths=".post; s.numSynths.postln;
-		~synths[name] = Synth(\loop, [
-			\buf, buf,
-			\out, channel,
-			\pan, pan,
-			\fadein, fade,
-			\gain, gain]);
+		if(buf.numChannels == 2, {
+			~synths[name] = Synth(\play_stereo, [
+				\buf, buf,
+				\out, channel,
+				\pan, pan,
+				\fadein, fade,
+				\gain, gain,
+				\looped, looped]);
+		}, {
+			if(buf.numChannels == 1, {
+				~synths[name] = Synth(\play_mono, [
+					\buf, buf,
+					\out, channel,
+					\pan, pan,
+					\fadein, fade,
+					\gain, gain,
+					\looped, looped]);
+			}, {
+				"WARNING: can't play sound with numChannels=".post; buf.numChannels.postln;
+			});
+		});
 	});
 }).add; 
 
