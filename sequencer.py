@@ -2,13 +2,13 @@ from synth_controller import SynthController
 import time
 import glob
 import random
-import sched
+from scheduler import Scheduler
 
 class Sequencer:
     def __init__(self):
         self._groups = []
         self._is_playing = set()
-        self._scheduler = sched.scheduler(time.time, time.sleep)
+        self._scheduler = Scheduler()
         SynthController.kill_potential_engine_from_previous_process()
         self._synth = SynthController()
         self._synth.launch_engine()
@@ -23,11 +23,9 @@ class Sequencer:
         self._synth.play(sound, pan, fade, gain, looped)
         self._is_playing.add(sound)
         if looped == 0:
-            self._scheduler.enter(
-                delay=self._synth.get_duration(sound),
-                priority=1,
-                action=self._stopped_playing,
-                argument=[sound])
+            self._scheduler.schedule(
+                action=lambda: self._stopped_playing(sound),
+                delay=self._synth.get_duration(sound))
 
     def is_playing(self, sound):
         return sound in self._is_playing
@@ -54,9 +52,7 @@ class Sequencer:
             time.sleep(.1)
 
     def _process(self):
-        print "scheduler.run()"
-        self._scheduler.run()
-        print "scheduler.run() returned"
+        self._scheduler.run_scheduled_events()
         for group in self._groups:
             group.process()
 
