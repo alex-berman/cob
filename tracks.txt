@@ -3,6 +3,7 @@ WATER (LOOPED)
 "water/Sound 2 mindre rinn.wav"
   +7.8
   egen reverb
+    decay time 3.8s
 
 "water/ZOOM0009{a,b,c} 44100 1.wav"
   olika panning
@@ -11,14 +12,51 @@ WATER (LOOPED)
 
 BRASS (NON-LOOPED)
 
+"mag/mag_weak{1a,1b,2,3}.wav"
+  +2.1
+  compression threshold -36.6db 
+  long reverb
+
+"mag/mag_breath1.wav"
+  +0
+  compression threshold -36.6db 
+  long reverb
+
 "hannabiell/tone01-09.wav"
   +12.4
-  compression
-    threshold -36.6db 
+  compression threshold -36.6db 
+  egen reverb
+    decay 2s
+    INGEN dry!
+
+"hannabiell/breath{1,3}.wav"
+  -10.5
+  compression threshold -30.8db 
+  long reverb
+
+"hannabiell/fragment01-05.wav"
+  +11.7
+  long reverb
+
+"hannabiell/squeak01-03.wav"
+  +0.3
+  long reverb
+
+BUSES
+
+long reverb
+  reverb
+    decay time 3.8s
+
+bubbles
+  -15.6
+  reverb
+    decay time 1.9s
+
+
+COMPRESSION
+
     ratio 3.6:1
     knee 22db
     attack 15ms
     release 200ms
-  reverb
-    INGEN dry!
-
