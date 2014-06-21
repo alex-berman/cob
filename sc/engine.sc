@@ -2,23 +2,36 @@ s.boot;
 s.doWhenBooted({
 
 ~reverb_bus = Bus.audio(s, 2);
+~sounds = Dictionary[];
+~synths = Dictionary[];
+~info_subscriber = nil;
 
-~loop_buffers = [
-  "water/Sound 2 mindre rinn.wav",
-  "water/ZOOM0009a 44100 1.wav",
-  "water/ZOOM0009b 44100 1.wav",
-  "water/ZOOM0009c 44100 1.wav",
-];
+OSCresponder.new(nil, "/info_subscribe",
+  { arg t, r, msg;
+	  var port = msg[1];
+	  "info_subscribe to port ".post; port.postln;
+	  ~info_subscriber = NetAddr.new("127.0.0.1", port);
+	  ~info_subscriber.connect;
+  }).add;
 
-~loops = Dictionary[];
-~loop_buffers.do(
-  { arg item, i;
-    var filename = "sound/" ++ item;
-    "creating buffer ".post; filename.postln;
-    ~loops[item] = Buffer.read(s, filename);
-});
-
-~loop_synths = Dictionary[];
+OSCresponder.new(nil, "/load",
+  { arg t, r, msg;
+	  var filename = msg[1].asString;
+	  var buf;
+	  "loading ".post; filename.postln;
+	  buf = Buffer.read(s, filename, 0, -1, {
+		  "loaded ".post; filename.postln;
+		  "result: ".post; buf.numFrames.postln;
+		  if(buf.numFrames > 0, {
+			  ~sounds[filename] = buf;
+			  if(~info_subscriber != nil, {
+				  ~info_subscriber.sendMsg("/loaded", filename, buf.numFrames);
+			  });
+		  }, {
+			  buf.free;
+		  });
+	  });
+  }).add;
 
 SynthDef(\loop, {
 	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1;
@@ -43,19 +56,20 @@ OSCresponder.new(nil, "/loop", {
     "pan:".post; pan.postln;
     "fade:".post; fade.postln;
 	"gain:".post; gain.postln;
-    buf = ~loops[name];
-    ~loops[name].postln;
-    if(buf == nil) {
-    	   "WARNING: sound not found: ".post;
-	   name.postln;
-	   };
-    "numSynths=".post; s.numSynths.postln;
-    ~loop_synths[name] = Synth(\loop, [
-		\buf, buf,
-		\out, channel,
-		\pan, pan,
-		\fadein, fade,
-		\gain, gain]);
+    buf = ~sounds[name];
+    "buf:".post; buf.postln;
+    if(buf == nil, {
+		"WARNING: sound not found: ".post;
+		name.postln;
+	}, {
+		"numSynths=".post; s.numSynths.postln;
+		~synths[name] = Synth(\loop, [
+			\buf, buf,
+			\out, channel,
+			\pan, pan,
+			\fadein, fade,
+			\gain, gain]);
+	});
 }).add; 
 
 

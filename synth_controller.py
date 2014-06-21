@@ -1,5 +1,6 @@
 import liblo
 import threading
+from osc_receiver import OscReceiver
 import time
 import subprocess
 import re
@@ -54,6 +55,15 @@ class SynthController:
     def connect(self, port):
         self._lock = threading.Lock()
         self.target = liblo.Address(port)
+        self._subscribe_to_info()
+
+    def _subscribe_to_info(self):
+        self._load_results = {}
+        if not self._sc_listener:
+            self._sc_listener = OscReceiver(proto=liblo.TCP, name="SynthController")
+            self._sc_listener.add_method("/loaded", "si", self._handle_loaded)
+            self._sc_listener.start()
+        self._send("/info_subscribe", self._sc_listener.port)
 
     def stop_engine(self):
         if self._sc_listener:
@@ -74,17 +84,17 @@ class SynthController:
             self.logger.info("SC process exited")
         self.target = None
 
-    def load_sound(self, sound_id, filename):
-        self._send("/load", sound_id, filename)
-        num_frames_loaded = self._get_load_result(sound_id)
+    def load_sound(self, filename):
+        self._send("/load", filename)
+        num_frames_loaded = self._get_load_result(filename)
         return num_frames_loaded
 
-    def _get_load_result(self, sound_id, timeout=10.0):
+    def _get_load_result(self, filename, timeout=10.0):
         t = time.time()
         while True:
-            if sound_id in self._load_results:
-                result = self._load_results[sound_id]
-                del self._load_results[sound_id]
+            if filename in self._load_results:
+                result = self._load_results[filename]
+                del self._load_results[filename]
                 return result
             elif (time.time() - t) > timeout:
                 return None
@@ -93,9 +103,9 @@ class SynthController:
                 time.sleep(0.01)
 
     def _handle_loaded(self,path, args, types, src, data):
-        sound_id, result = args
+        filename, result = args
         print "got /loaded %s" % args #TEMP
-        self._load_results[sound_id] = result
+        self._load_results[filename] = result
 
     def play_loop(self, sound, pan=0, fade=0.1, gain=0):
         self._send("/loop", sound, pan, fade, gain)
