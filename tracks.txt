@@ -1,0 +1,24 @@
+WATER (LOOPED)
+
+"water/Sound 2 mindre rinn.wav"
+  +7.8
+  egen reverb
+
+"water/ZOOM0009{a,b,c} 44100 1.wav"
+  olika panning
+  bubbles reverb
+
+
+BRASS (NON-LOOPED)
+
+"hannabiell/tone01-09.wav"
+  +12.4
+  compression
+    threshold -36.6db 
+    ratio 3.6:1
+    knee 22db
+    attack 15ms
+    release 200ms
+  reverb
+    INGEN dry!
+
