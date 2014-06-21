@@ -3,45 +3,52 @@ import time
 import glob
 import random
 from scheduler import Scheduler
+import copy
+
+DEFAULT_PARAMS = {"pan": 0,
+                  "gain": 1,
+                  "fade": 0}
 
 class Sequencer:
     def __init__(self):
+        self._sounds = {}
         self._groups = []
-        self._is_playing = set()
         self._scheduler = Scheduler()
         SynthController.kill_potential_engine_from_previous_process()
         self._synth = SynthController()
         self._synth.launch_engine()
         self._synth.connect(self._synth.lang_port)
 
-    def play(self, sound, pan=0, fade=None, gain=0, looped=0):
-        if fade is None:
-            if looped == 0:
-                fade = 0
-            else:
-                fade = 0.1
-        self._synth.play(sound, pan, fade, gain, looped)
-        self._is_playing.add(sound)
+    def play(self, sound, looped=0):
+        params = self._sounds[sound]["params"]
+        self._synth.play(sound, params["pan"], params["fade"], params["gain"], looped)
+        self._sounds[sound]["is_playing"] = True
         if looped == 0:
             self._scheduler.schedule(
                 action=lambda: self._stopped_playing(sound),
                 delay=self._synth.get_duration(sound))
 
     def is_playing(self, sound):
-        return sound in self._is_playing
+        return self._sounds[sound]["is_playing"]
 
     def _stopped_playing(self, sound):
-        self._is_playing.remove(sound)
+        self._sounds[sound]["is_playing"] = False
 
     def load_sounds(self, pattern):
         for sound in glob.glob(pattern):
             self.load_sound(sound)
 
-    def load_sound(self, *args, **kwargs):
-        self._synth.load_sound(*args, **kwargs)
+    def load_sound(self, sound):
+        self._synth.load_sound(sound)
+        self._sounds[sound] = {"is_playing": False,
+                               "params": copy.copy(DEFAULT_PARAMS)}
 
-    def add_group(self, pattern, **kwargs):
-        group = Group(self, **kwargs)
+    def set_params(self, sound, params):
+        for key, value in params.iteritems():
+            self._sounds[sound]["params"][key] = value
+
+    def add_group(self, pattern, params):
+        group = Group(self, params)
         for sound in glob.glob(pattern):
             group.add(sound)
         self._groups.append(group)
@@ -57,13 +64,14 @@ class Sequencer:
             group.process()
 
 class Group:
-    def __init__(self, sequencer, **kwargs):
+    def __init__(self, sequencer, params):
         self._sequencer = sequencer
-        self._kwargs = kwargs
+        self._params = params
         self._sounds = []
         self._active_sound = None
 
     def add(self, sound):
+        self._sequencer.set_params(sound, self._params)
         self._sounds.append(sound)
 
     def process(self):
@@ -75,5 +83,5 @@ class Group:
             self._activate(random.choice(self._sounds))
 
     def _activate(self, sound):
-        self._sequencer.play(sound, **self._kwargs)
+        self._sequencer.play(sound)
         self._active_sound = sound
