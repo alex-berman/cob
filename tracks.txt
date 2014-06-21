@@ -7,7 +7,7 @@ WATER (LOOPED)
 
 "water/ZOOM0009{a,b,c} 44100 1.wav"
   olika panning
-  bubbles reverb
+  bubbles bus
 
 
 BRASS (NON-LOOPED)
