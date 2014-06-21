@@ -14,7 +14,12 @@ class Sequencer:
         self._synth.launch_engine()
         self._synth.connect(self._synth.lang_port)
 
-    def play(self, sound, pan=0, fade=0.1, gain=0, looped=0):
+    def play(self, sound, pan=0, fade=None, gain=0, looped=0):
+        if fade is None:
+            if looped == 0:
+                fade = 0
+            else:
+                fade = 0.1
         self._synth.play(sound, pan, fade, gain, looped)
         self._is_playing.add(sound)
         if looped == 0:
