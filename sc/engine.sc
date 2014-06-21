@@ -35,7 +35,7 @@ OSCresponder.new(nil, "/load",
 
 SynthDef(\play_stereo, {
 	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1, looped=0;
-	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf), loop:looped);
+	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
 	sig = Balance2.ar(sig[0], sig[1], pan) * gain;
 	sig = EnvGen.ar(Env.asr(fadein, amp, fadeout, 'linear'), gate, doneAction:2) * sig;
 	Out.ar(out, sig);
@@ -44,7 +44,7 @@ SynthDef(\play_stereo, {
 
 SynthDef(\play_mono, {
 	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1, looped=0;
-	var sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf), loop:looped);
+	var sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
 	sig = Pan2.ar(sig, pan) * gain;
 	sig = EnvGen.ar(Env.asr(fadein, amp, fadeout, 'linear'), gate, doneAction:2) * sig;
 	Out.ar(out, sig);
