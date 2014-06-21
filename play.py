@@ -1,20 +1,7 @@
 #!/usr/bin/env python
 
-from synth_controller import SynthController
-import time
-
-class Sequencer:
-    def __init__(self):
-        SynthController.kill_potential_engine_from_previous_process()
-        self._synth = SynthController()
-        self._synth.launch_engine()
-        self._synth.connect(self._synth.lang_port)
-
-    def play_loop(self, *args, **kwargs):
-        self._synth.play_loop(*args, **kwargs)
-
+from sequencer import Sequencer
 sequencer = Sequencer()
-time.sleep(1)
 
 sequencer.play_loop(
     "water/Sound 2 mindre rinn.wav",
@@ -33,5 +20,4 @@ sequencer.play_loop(
     gain=-15.6,
     pan=0.8)
 
-while True:
-    time.sleep(1)
+sequencer.run_main_loop()

@@ -40,6 +40,10 @@ class SynthController:
                                                   target=self._read_sc_output)
         self._sc_output_thread.daemon = True
         self._sc_output_thread.start()
+        self._await_synths_to_be_loaded()
+
+    def _await_synths_to_be_loaded(self):
+        time.sleep(1)
 
     def _read_sc_output(self):
         while self._listening_to_engine:
