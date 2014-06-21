@@ -26,7 +26,11 @@ sequencer.play(
     gain=-15.6,
     pan=0.8)
 
-#sequencer.add_group("sound/mag/mag_weak*.wav")
-sequencer.add_group("sound/hannabiell/tone*.wav")
+sequencer.add_group(
+    "sound/mag/mag_weak*.wav",
+    pan=-1)
+sequencer.add_group(
+    "sound/hannabiell/tone*.wav",
+    pan=1)
 
 sequencer.run_main_loop()

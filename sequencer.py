@@ -42,8 +42,8 @@ class Sequencer:
     def load_sound(self, *args, **kwargs):
         self._synth.load_sound(*args, **kwargs)
 
-    def add_group(self, pattern):
-        group = Group(self)
+    def add_group(self, pattern, **kwargs):
+        group = Group(self, **kwargs)
         for sound in glob.glob(pattern):
             group.add(sound)
         self._groups.append(group)
@@ -54,13 +54,16 @@ class Sequencer:
             time.sleep(.1)
 
     def _process(self):
+        print "scheduler.run()"
         self._scheduler.run()
+        print "scheduler.run() returned"
         for group in self._groups:
             group.process()
 
 class Group:
-    def __init__(self, sequencer):
+    def __init__(self, sequencer, **kwargs):
         self._sequencer = sequencer
+        self._kwargs = kwargs
         self._sounds = []
         self._active_sound = None
 
@@ -69,7 +72,6 @@ class Group:
 
     def process(self):
         if self._active_sound is not None:
-            print "is_playing(%s)=%s" % (self._active_sound, self._sequencer.is_playing(self._active_sound))
             if not self._sequencer.is_playing(self._active_sound):
                 self._active_sound = None
 
@@ -77,5 +79,5 @@ class Group:
             self._activate(random.choice(self._sounds))
 
     def _activate(self, sound):
-        self._sequencer.play(sound)
+        self._sequencer.play(sound, **self._kwargs)
         self._active_sound = sound
