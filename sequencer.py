@@ -7,12 +7,14 @@ import copy
 
 DEFAULT_PARAMS = {"pan": 0,
                   "gain": 1,
-                  "fade": None}
+                  "fade": None,
+                  "send": "master"}
 
 class Sequencer:
     def __init__(self):
         self._sounds = {}
         self._groups = []
+        self._buses = {}
         self._scheduler = Scheduler()
         SynthController.kill_potential_engine_from_previous_process()
         self._synth = SynthController()
@@ -21,7 +23,13 @@ class Sequencer:
 
     def play(self, sound, looped=0):
         params = self._sounds[sound]["params"]
-        self._synth.play(sound, params["pan"], params["fade"], params["gain"], looped)
+        self._synth.play(
+            sound,
+            params["pan"],
+            params["fade"],
+            params["gain"],
+            looped,
+            params["send"])
         self._sounds[sound]["is_playing"] = True
         if looped == 0:
             self._scheduler.schedule(
@@ -52,6 +60,10 @@ class Sequencer:
         for sound in glob.glob(pattern):
             group.add(sound)
         self._groups.append(group)
+
+    def add_bus(self, name, params):
+        self._synth.add_bus(name)
+        self._buses[name] = {"params": params}
 
     def run_main_loop(self):
         while True:

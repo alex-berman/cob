@@ -110,16 +110,20 @@ class SynthController:
             "duration": duration
             }
 
-    def play(self, sound, pan, fade, gain, looped):
+    def play(self, sound, pan, fade, gain, looped, send):
         if fade is None:
             if looped:
                 fade = .1
             else:
                 fade = 0
-        self._send("/play", sound, pan, fade, gain, looped)
+
+        self._send("/play", sound, pan, fade, gain, looped, send)
 
     def get_duration(self, sound):
         return self._sounds_info[sound]["duration"]
+
+    def add_bus(self, name):
+        self._send("/add_bus", name)
 
     def _send(self, command, *args):
         with self._lock:

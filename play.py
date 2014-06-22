@@ -3,21 +3,28 @@
 from sequencer import Sequencer
 
 sequencer = Sequencer()
+sequencer.add_bus(
+    "bubbles",
+    {"gain": -15.6})
+
 sequencer.load_sounds("sound/*/*.wav")
 sequencer.set_params(
     "sound/water/Sound 2 mindre rinn.wav",
     {"gain": 7.8})
 sequencer.set_params(
     "sound/water/ZOOM0009a 44100 1.wav",
-    {"gain": -15.6,
+    {"send": "bubbles",
+     "gain": -15.6,
      "pan": -0.8})
 sequencer.set_params(
     "sound/water/ZOOM0009b 44100 1.wav",
-    {"gain": -15.6,
+    {"send": "bubbles",
+     "gain": -15.6,
      "pan": 0})
 sequencer.set_params(
     "sound/water/ZOOM0009c 44100 1.wav",
-    {"gain": -15.6,
+    {"send": "bubbles",
+     "gain": -15.6,
      "pan": 0.8})
 
 sequencer.play(
