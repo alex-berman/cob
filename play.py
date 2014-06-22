@@ -3,9 +3,11 @@
 from sequencer import Sequencer
 
 sequencer = Sequencer()
-sequencer.add_bus(
-    "bubbles",
-    {})
+sequencer.add_bus("bubbles")
+sequencer.set_bus_params("bubbles", {
+        "reverb_room": 0.5,
+        "reverb_mix": 0.6
+        })
 
 sequencer.load_sounds("sound/*/*.wav")
 sequencer.set_params(

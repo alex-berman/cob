@@ -5,10 +5,16 @@ import random
 from scheduler import Scheduler
 import copy
 
-DEFAULT_PARAMS = {"pan": 0,
-                  "gain": 1,
-                  "fade": None,
-                  "send": "master"}
+DEFAULT_SOUND_PARAMS = {
+    "pan": 0,
+    "gain": 1,
+    "fade": None,
+    "send": "master"}
+
+DEFAULT_BUS_PARAMS = {
+    "reverb_mix": 0,
+    "reverb_room": 0,
+    "reverb_damp": 1}
 
 class Sequencer:
     def __init__(self):
@@ -49,7 +55,7 @@ class Sequencer:
     def load_sound(self, sound):
         self._synth.load_sound(sound)
         self._sounds[sound] = {"is_playing": False,
-                               "params": copy.copy(DEFAULT_PARAMS)}
+                               "params": copy.copy(DEFAULT_SOUND_PARAMS)}
 
     def set_params(self, sound, params):
         for key, value in params.iteritems():
@@ -61,9 +67,18 @@ class Sequencer:
             group.add(sound)
         self._groups.append(group)
 
-    def add_bus(self, name, params):
+    def add_bus(self, name):
         self._synth.add_bus(name)
-        self._buses[name] = {"params": params}
+        self._buses[name] = {"params": copy.copy(DEFAULT_BUS_PARAMS)}
+
+    def set_bus_params(self, bus, new_params):
+        params = self._buses[bus]["params"]
+        params.update(new_params)
+        self._synth.set_bus_params(
+            bus,
+            params["reverb_mix"],
+            params["reverb_room"],
+            params["reverb_damp"])
 
     def run_main_loop(self):
         while True:

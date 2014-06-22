@@ -1,12 +1,11 @@
 s.boot;
 s.doWhenBooted({
 
-~reverb_bus = Bus.audio(s, 2);
 ~sounds = Dictionary[];
 ~synths = Dictionary[];
 ~info_subscriber = nil;
-
 ~buses = Dictionary[];
+~reverbs = Dictionary[];
 
 OSCresponder.new(nil, "/info_subscribe",
   { arg t, r, msg;
@@ -40,10 +39,18 @@ OSCresponder.new(nil, "/add_bus",
 	  var name = msg[1].asString;
 	  "/add_bus ".post; name.postln;
 	  ~buses[name] = Bus.audio(s, 2);
-	  Synth(\add_reverb_stereo, [
+	  ~reverbs[name] = Synth(\add_reverb_stereo, [
 		  \bus, ~buses[name]
 	  ]);
   }).add;
+
+OSCresponder.new(nil, "/set_bus_params", {
+	arg t, r, msg;
+	var name = msg[1].asString;
+	var room = msg[2];
+	var reverb = ~reverbs[name];
+	reverb.set(\room, room);
+}).add;
 
 SynthDef(\play_stereo, {
 	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1, looped=0, send=0, sendGain=0;

@@ -125,6 +125,9 @@ class SynthController:
     def add_bus(self, name):
         self._send("/add_bus", name)
 
+    def set_bus_params(self, name, mix, room, damp):
+        self._send("/set_bus_params", name, mix, room, damp)
+
     def _send(self, command, *args):
         with self._lock:
             liblo.send(self.target, command, *args)
