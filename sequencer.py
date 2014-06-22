@@ -18,11 +18,15 @@ DEFAULT_BUS_PARAMS = {
     "reverb_room": 0,
     "reverb_damp": 1}
 
+class Parameters:
+    sounds = {}
+    buses = {}
+
 class Sequencer:
     def __init__(self):
         self._sounds = {}
         self._groups = []
-        self._buses = {}
+        self._params = Parameters()
         self._scheduler = Scheduler()
         SynthController.kill_potential_engine_from_previous_process()
         self._synth = SynthController()
@@ -30,7 +34,7 @@ class Sequencer:
         self._synth.connect(self._synth.lang_port)
 
     def play(self, sound, looped=0):
-        params = self._sounds[sound]["params"]
+        params = self._params.sounds[sound]
         self._synth.play(
             sound,
             params["pan"],
@@ -61,12 +65,12 @@ class Sequencer:
 
     def load_sound(self, sound):
         self._synth.load_sound(sound)
-        self._sounds[sound] = {"is_playing": False,
-                               "params": copy.copy(DEFAULT_SOUND_PARAMS)}
+        self._sounds[sound] = {"is_playing": False}
+        self._params.sounds[sound] = copy.copy(DEFAULT_SOUND_PARAMS)
 
     def set_params(self, pattern, params):
         for sound in glob.glob(pattern):
-            self._sounds[sound]["params"].update(params)
+            self._params.sounds[sound].update(params)
 
     def add_group(self, pattern, params):
         group = Group(self, params)
@@ -76,10 +80,10 @@ class Sequencer:
 
     def add_bus(self, name):
         self._synth.add_bus(name)
-        self._buses[name] = {"params": copy.copy(DEFAULT_BUS_PARAMS)}
+        self._params.buses[name] = copy.copy(DEFAULT_BUS_PARAMS)
 
     def set_bus_params(self, bus, new_params):
-        params = self._buses[bus]["params"]
+        params = self._params.buses[bus]
         params.update(new_params)
         self._synth.set_bus_params(
             bus,
