@@ -7,7 +7,7 @@ import copy
 
 DEFAULT_PARAMS = {"pan": 0,
                   "gain": 1,
-                  "fade": 0}
+                  "fade": None}
 
 class Sequencer:
     def __init__(self):
