@@ -53,7 +53,7 @@ OSCresponder.new(nil, "/set_bus_params", {
 }).add;
 
 SynthDef(\play_stereo, {
-	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1, looped=0, send=0, sendGain=0;
+	arg buf, out, pan, fadein, amp=1, fadeout=0, gate=1, gain, looped, send, sendGain;
 	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
 	sig = Balance2.ar(sig[0], sig[1], pan);
 	sig = EnvGen.ar(Env.asr(fadein, amp, fadeout, 'linear'), gate, doneAction:2) * sig;
@@ -62,7 +62,7 @@ SynthDef(\play_stereo, {
 }).send(s);
 
 SynthDef(\play_mono, {
-	arg buf, out=0, pan=0, fadein=1, amp=1.0, fadeout=1, gate=1, gain=1, looped=0, send=0, sendGain=0;
+	arg buf, out, pan, fadein, amp=1, fadeout=0, gate=1, gain, looped, send, sendGain;
 	var sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
 	sig = Pan2.ar(sig, pan);
 	sig = EnvGen.ar(Env.asr(fadein, amp, fadeout, 'linear'), gate, doneAction:2) * sig;
