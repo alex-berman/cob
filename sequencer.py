@@ -9,7 +9,8 @@ DEFAULT_SOUND_PARAMS = {
     "pan": 0,
     "gain": 1,
     "fade": None,
-    "send": "master"}
+    "send": "master",
+    "send_gain": 0}
 
 DEFAULT_BUS_PARAMS = {
     "reverb_mix": 0,
@@ -35,7 +36,8 @@ class Sequencer:
             params["fade"],
             params["gain"],
             looped,
-            params["send"])
+            params["send"],
+            params["send_gain"])
         self._sounds[sound]["is_playing"] = True
         if looped == 0:
             self._scheduler.schedule(
@@ -57,12 +59,12 @@ class Sequencer:
         self._sounds[sound] = {"is_playing": False,
                                "params": copy.copy(DEFAULT_SOUND_PARAMS)}
 
-    def set_params(self, sound, params):
-        for key, value in params.iteritems():
-            self._sounds[sound]["params"][key] = value
+    def set_params(self, pattern, params):
+        for sound in glob.glob(pattern):
+            self._sounds[sound]["params"].update(params)
 
-    def add_group(self, pattern, params):
-        group = Group(self, params)
+    def add_group(self, pattern):
+        group = Group(self)
         for sound in glob.glob(pattern):
             group.add(sound)
         self._groups.append(group)
@@ -91,14 +93,12 @@ class Sequencer:
             group.process()
 
 class Group:
-    def __init__(self, sequencer, params):
+    def __init__(self, sequencer):
         self._sequencer = sequencer
-        self._params = params
         self._sounds = []
         self._active_sound = None
 
     def add(self, sound):
-        self._sequencer.set_params(sound, self._params)
         self._sounds.append(sound)
 
     def process(self):

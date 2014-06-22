@@ -78,6 +78,7 @@ OSCresponder.new(nil, "/play", {
 	var gain_dB = msg[4];
 	var looped = msg[5];
 	var sendName = msg[6].asString;
+	var sendGain_dB = msg[7];
     var buf;
     var channel = 0;
 	var gain = gain_dB.dbamp;
@@ -88,7 +89,7 @@ OSCresponder.new(nil, "/play", {
 		sendGain = 0;
 	}, {
 		send = ~buses[sendName];
-		sendGain = gain;
+		sendGain = sendGain_dB.dbamp;
 	});
 
     "name:".post; name.postln;

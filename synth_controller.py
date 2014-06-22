@@ -110,14 +110,14 @@ class SynthController:
             "duration": duration
             }
 
-    def play(self, sound, pan, fade, gain, looped, send):
+    def play(self, sound, pan, fade, gain, looped, send, send_gain):
         if fade is None:
             if looped:
                 fade = .1
             else:
                 fade = 0
 
-        self._send("/play", sound, pan, fade, gain, looped, send)
+        self._send("/play", sound, pan, fade, gain, looped, send, send_gain)
 
     def get_duration(self, sound):
         return self._sounds_info[sound]["duration"]
