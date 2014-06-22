@@ -53,8 +53,16 @@ OSCresponder.new(nil, "/set_bus_params", {
 }).add;
 
 SynthDef(\play_stereo, {
-	arg buf, out, pan, fadein, gain, looped, send, sendGain;
+	arg buf, out, pan, fadein, gain, looped, send, sendGain, compThreshold;
 	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
+	sig = Compander.ar(
+		sig, sig,
+		thresh: compThreshold,
+		slopeBelow: 1.0,
+		slopeAbove: 0.1,
+		clampTime: 0.001,
+		relaxTime: 0.01
+	);
 	sig = Balance2.ar(sig[0], sig[1], pan);
 	sig = EnvGen.ar(Env.asr(fadein, 1, 0, 'linear'), 1, doneAction:2) * sig;
 	Out.ar(out, sig * gain);
@@ -62,8 +70,16 @@ SynthDef(\play_stereo, {
 }).send(s);
 
 SynthDef(\play_mono, {
-	arg buf, out, pan, fadein, gain, looped, send, sendGain;
+	arg buf, out, pan, fadein, gain, looped, send, sendGain, compThreshold;
 	var sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
+	sig = Compander.ar(
+		sig, sig,
+		thresh: compThreshold,
+		slopeBelow: 1.0,
+		slopeAbove: 0.1,
+		clampTime: 0.001,
+		relaxTime: 0.01
+	);
 	sig = Pan2.ar(sig, pan);
 	sig = EnvGen.ar(Env.asr(fadein, 1, 0, 'linear'), 1, doneAction:2) * sig;
 	Out.ar(out, sig * gain);
@@ -79,10 +95,12 @@ OSCresponder.new(nil, "/play", {
 	var looped = msg[5];
 	var sendName = msg[6].asString;
 	var sendGain_dB = msg[7];
+	var compThreshold_dB = msg[8];
     var buf;
     var channel = 0;
 	var gain = gain_dB.dbamp;
 	var send, sendGain;
+	var compThreshold = compThreshold_dB.dbamp;
 
 	if(sendName == "master", {
 		send = 0;
@@ -115,7 +133,8 @@ OSCresponder.new(nil, "/play", {
 				\gain, gain,
 				\looped, looped,
 				\send, send,
-				\sendGain, sendGain]);
+				\sendGain, sendGain,
+				\compThreshold, compThreshold]);
 		}, {
 			if(buf.numChannels == 1, {
 				~synths[name] = Synth(\play_mono, [
@@ -126,7 +145,8 @@ OSCresponder.new(nil, "/play", {
 					\gain, gain,
 					\looped, looped,
 					\send, send,
-					\sendGain, sendGain]);
+					\sendGain, sendGain,
+					\compThreshold, compThreshold]);
 			}, {
 				"WARNING: can't play sound with numChannels=".post; buf.numChannels.postln;
 			});

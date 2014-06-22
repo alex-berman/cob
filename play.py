@@ -60,6 +60,7 @@ sequencer.set_params(
     "sound/mag/mag_weak*.wav",
     {"send": "long_reverb",
      "gain": 2.1,
+     "comp_threshold": -36.6,
      "pan": -1})
 sequencer.add_group(
     "sound/mag/mag_weak*.wav")
@@ -68,6 +69,7 @@ sequencer.set_params(
     "sound/hannabiell/tone*.wav",
     {"send": "hannabell_tone_reverb",
      "gain": -100,
+     "comp_threshold": -36.6,
      "send_gain": 12.4,
      "pan": 1})
 sequencer.add_group(

@@ -10,7 +10,8 @@ DEFAULT_SOUND_PARAMS = {
     "gain": 1,
     "fade": None,
     "send": "master",
-    "send_gain": 0}
+    "send_gain": 0,
+    "comp_threshold": 0}
 
 DEFAULT_BUS_PARAMS = {
     "reverb_mix": 0,
@@ -37,7 +38,8 @@ class Sequencer:
             params["gain"],
             looped,
             params["send"],
-            params["send_gain"])
+            params["send_gain"],
+            params["comp_threshold"])
         self._sounds[sound]["is_playing"] = True
         if looped == 0:
             self._scheduler.schedule(
