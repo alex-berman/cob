@@ -5,7 +5,7 @@ from sequencer import Sequencer
 sequencer = Sequencer()
 sequencer.add_bus(
     "bubbles",
-    {"gain": -15.6})
+    {})
 
 sequencer.load_sounds("sound/*/*.wav")
 sequencer.set_params(
