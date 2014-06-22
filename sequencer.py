@@ -42,9 +42,12 @@ class Sequencer:
             params["comp_threshold"])
         self._sounds[sound]["is_playing"] = True
         if looped == 0:
-            self._scheduler.schedule(
+            self.schedule(
                 action=lambda: self._stopped_playing(sound),
                 delay=self._synth.get_duration(sound))
+
+    def schedule(self, action, delay):
+        self._scheduler.schedule(action, delay)
 
     def is_playing(self, sound):
         return self._sounds[sound]["is_playing"]
@@ -65,8 +68,8 @@ class Sequencer:
         for sound in glob.glob(pattern):
             self._sounds[sound]["params"].update(params)
 
-    def add_group(self, pattern):
-        group = Group(self)
+    def add_group(self, pattern, params):
+        group = Group(self, params)
         for sound in glob.glob(pattern):
             group.add(sound)
         self._groups.append(group)
@@ -94,23 +97,45 @@ class Sequencer:
         for group in self._groups:
             group.process()
 
+
+PLAYING, IDLE, WAITING_TO_PLAY = range(3)
+
 class Group:
-    def __init__(self, sequencer):
+    def __init__(self, sequencer, params):
         self._sequencer = sequencer
+        self._params = params
         self._sounds = []
-        self._active_sound = None
+        self._state = IDLE
 
     def add(self, sound):
         self._sounds.append(sound)
 
     def process(self):
-        if self._active_sound is not None:
+        if self._state == IDLE:
+            self._schedule_play()
+            self._finished_waiting = False
+            self._state = WAITING_TO_PLAY
+
+        elif self._state == PLAYING:
             if not self._sequencer.is_playing(self._active_sound):
-                self._active_sound = None
+                self._state = IDLE
 
-        if self._active_sound is None:
-            self._activate(random.choice(self._sounds))
+        elif self._state == WAITING_TO_PLAY:
+            if self._finished_waiting:
+                self._play_something()
+                self._state = PLAYING
 
-    def _activate(self, sound):
-        self._sequencer.play(sound)
-        self._active_sound = sound
+    def _schedule_play(self):
+        silence_duration = random.uniform(
+            self._params["silence_min"],
+            self._params["silence_max"])
+        self._sequencer.schedule(
+            lambda: self.finished_waiting(),
+            silence_duration)
+
+    def finished_waiting(self):
+        self._finished_waiting = True
+
+    def _play_something(self):
+        self._active_sound = random.choice(self._sounds)
+        self._sequencer.play(self._active_sound)

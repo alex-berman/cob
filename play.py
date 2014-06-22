@@ -81,7 +81,9 @@ sequencer.set_params(
     {"pan": -1})
 
 sequencer.add_group(
-    "sound/mag/*.wav")
+    "sound/mag/*.wav",
+    {"silence_min": 10,
+     "silence_max": 30})
 
 
 # Hannabiell
@@ -115,7 +117,9 @@ sequencer.set_params(
     {"pan": 1})
 
 sequencer.add_group(
-    "sound/hannabiell/*.wav")
+    "sound/hannabiell/*.wav",
+    {"silence_min": 10,
+     "silence_max": 30})
 
 
 # Run everything
