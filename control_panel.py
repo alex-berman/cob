@@ -7,12 +7,14 @@ from client import WebsocketClient
 from event import Event
 import re
 
+SLIDER_PRECISION = 1000
+
 class MainWindow(QWidget):
     def __init__(self):
         QWidget.__init__(self)
 
     def _add_controls(self):
-        self._layout = QVBoxLayout()
+        self._layout = QFormLayout()
         self._add_sound_controls()
         self._add_bus_controls()
         self.setLayout(self._layout)
@@ -22,14 +24,24 @@ class MainWindow(QWidget):
             self._add_sound_control(sound)
 
     def _add_sound_control(self, sound):
-        self._layout.addWidget(QLabel(self._sound_label(sound)))
+        gain_slider = self._create_slider()
+        self._layout.addRow(
+            QLabel(self._sound_label(sound)),
+            gain_slider)
 
+    def _create_slider(self):
+        slider = QSlider(Qt.Horizontal)
+        slider.setRange(0, SLIDER_PRECISION)
+        slider.setSingleStep(1)
+        slider.setFixedSize(100, 20)
+        return slider
+    
     def _add_bus_controls(self):
         for bus in self._buses:
             self._add_bus_control(bus)
 
     def _add_bus_control(self, bus):
-        self._layout.addWidget(QLabel(bus))
+        self._layout.addRow(QLabel(bus))
 
     def _sound_label(self, filename):
         matcher = re.match(r"sound\/(.*)\.wav", filename)
