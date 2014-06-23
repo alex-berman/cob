@@ -15,6 +15,10 @@ class WebsocketClient(ws4py.client.threadedclient.WebSocketClient):
         print "Closed down", code, reason
 
     def received_message(self, message):
-        obj = cPickle.loads(str(message))
-        print "got from server: %s" % obj
+        event = cPickle.loads(str(message))
+        print "got from server: %s" % event
+        self.received_event(event)
+
+    def received_event(self, event):
+        pass
 

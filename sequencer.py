@@ -6,6 +6,7 @@ from scheduler import Scheduler
 import copy
 from server import WebsocketServer, ClientHandler
 import threading
+from event import Event
 
 DEFAULT_SOUND_PARAMS = {
     "pan": 0,
@@ -123,7 +124,7 @@ class ControlPanelHandler(ClientHandler):
         self._send_sounds()
 
     def _send_sounds(self):
-        self.send(self._sequencer.get_sounds().keys())
+        self.send_event(Event(Event.SOUNDS, self._sequencer.get_sounds().keys()))
 
     def on_message(self, message):
         print "got message %r" % message
