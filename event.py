@@ -1,5 +1,5 @@
 class Event:
-    SOUNDS = "SOUNDS"
+    CONTROLABLES = "CONTROLABLES"
 
     def __init__(self, type_, content):
         self.type = type_

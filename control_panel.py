@@ -11,14 +11,25 @@ class MainWindow(QWidget):
     def __init__(self):
         QWidget.__init__(self)
 
-    def _add_sound_controls(self):
+    def _add_controls(self):
         self._layout = QVBoxLayout()
+        self._add_sound_controls()
+        self._add_bus_controls()
+        self.setLayout(self._layout)
+
+    def _add_sound_controls(self):
         for sound in sorted(self._sounds):
             self._add_sound_control(sound)
-        self.setLayout(self._layout)
 
     def _add_sound_control(self, sound):
         self._layout.addWidget(QLabel(self._sound_label(sound)))
+
+    def _add_bus_controls(self):
+        for bus in self._buses:
+            self._add_bus_control(bus)
+
+    def _add_bus_control(self, bus):
+        self._layout.addWidget(QLabel(bus))
 
     def _sound_label(self, filename):
         matcher = re.match(r"sound\/(.*)\.wav", filename)
@@ -31,9 +42,9 @@ class MainWindow(QWidget):
         custom_qt_event.callback()
 
     def received_event(self, event):
-        if event.type == Event.SOUNDS:
-            self._sounds = event.content
-            self._add_sound_controls()
+        if event.type == Event.CONTROLABLES:
+            self._sounds, self._buses = event.content
+            self._add_controls()
         else:
             raise Exception("unknown event type %r" % event.type)
 

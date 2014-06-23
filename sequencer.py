@@ -28,6 +28,7 @@ class Parameters:
 class Sequencer:
     def __init__(self):
         self._sounds = {}
+        self._buses = []
         self._groups = []
         self._params = Parameters()
         self._scheduler = Scheduler()
@@ -39,6 +40,9 @@ class Sequencer:
 
     def get_sounds(self):
         return self._sounds
+
+    def get_buses(self):
+        return self._buses
 
     def play(self, sound, looped=0):
         params = self._params.sounds[sound]
@@ -87,6 +91,7 @@ class Sequencer:
 
     def add_bus(self, name):
         self._synth.add_bus(name)
+        self._buses.append(name)
         self._params.buses[name] = copy.copy(DEFAULT_BUS_PARAMS)
 
     def set_bus_params(self, bus, new_params):
@@ -124,7 +129,9 @@ class ControlPanelHandler(ClientHandler):
         self._send_sounds()
 
     def _send_sounds(self):
-        self.send_event(Event(Event.SOUNDS, self._sequencer.get_sounds().keys()))
+        sounds = self._sequencer.get_sounds().keys()
+        buses = self._sequencer.get_buses()
+        self.send_event(Event(Event.CONTROLABLES, (sounds, buses)))
 
     def on_message(self, message):
         print "got message %r" % message
