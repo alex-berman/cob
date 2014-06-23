@@ -36,6 +36,9 @@ class Sequencer:
         self._synth.connect(self._synth.lang_port)
         self._setup_websocket_server()
 
+    def get_sounds(self):
+        return self._sounds
+
     def play(self, sound, looped=0):
         params = self._params.sounds[sound]
         self._synth.play(
@@ -115,7 +118,13 @@ class ControlPanelHandler(ClientHandler):
     def __init__(self, *args, **kwargs):
         self._sequencer = kwargs.pop("sequencer")
         super(ControlPanelHandler, self).__init__(*args, **kwargs)
-        
+
+    def open(self):
+        self._send_sounds()
+
+    def _send_sounds(self):
+        self.send(self._sequencer.get_sounds().keys())
+
     def on_message(self, message):
         print "got message %r" % message
 

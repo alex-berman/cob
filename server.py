@@ -3,9 +3,11 @@ import tornado.web
 import tornado.ioloop
 import tornado.websocket
 from tornado.httpserver import HTTPServer
+import cPickle
 
 class ClientHandler(tornado.websocket.WebSocketHandler):
-    pass
+    def send(self, obj):
+        self.write_message(cPickle.dumps(obj))
 
 class WebsocketServer(tornado.web.Application):
     def __init__(self, client_handler=ClientHandler, settings={}):

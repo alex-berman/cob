@@ -1,5 +1,6 @@
 import ws4py.client.threadedclient
 from config import *
+import cPickle
 
 class WebsocketClient(ws4py.client.threadedclient.WebSocketClient):
     def __init__(self, host="localhost"):
@@ -14,4 +15,6 @@ class WebsocketClient(ws4py.client.threadedclient.WebSocketClient):
         print "Closed down", code, reason
 
     def received_message(self, message):
-        print "got from server: %r"
+        obj = cPickle.loads(str(message))
+        print "got from server: %s" % obj
+
