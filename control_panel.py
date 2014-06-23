@@ -5,7 +5,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from client import WebsocketClient
 from event import Event
-import threading
 
 class MainWindow(QWidget):
     def __init__(self):
