@@ -20,8 +20,8 @@ class MainWindow(QWidget):
     def _add_sound_control(self, sound):
         self._layout.addWidget(QLabel(sound))
 
-    def customEvent(self, event):
-        event.callback()
+    def customEvent(self, custom_qt_event):
+        custom_qt_event.callback()
 
     def received_event(self, event):
         if event.type == Event.SOUNDS:
@@ -30,11 +30,11 @@ class MainWindow(QWidget):
         else:
             raise Exception("unknown event type %r" % event.type)
 
-class _Event(QEvent):
+class CustomQtEvent(QEvent):
     EVENT_TYPE = QEvent.Type(QEvent.registerEventType())
 
     def __init__(self, callback):
-        QEvent.__init__(self, _Event.EVENT_TYPE)
+        QEvent.__init__(self, CustomQtEvent.EVENT_TYPE)
         self.callback = callback
 
 class Client(WebsocketClient):
@@ -44,7 +44,7 @@ class Client(WebsocketClient):
 
     def received_event(self, event):
         callback = lambda: self._window.received_event(event)
-        QApplication.postEvent(self._window, _Event(callback))
+        QApplication.postEvent(self._window, CustomQtEvent(callback))
 
 app = QApplication(sys.argv)
 window = MainWindow()
