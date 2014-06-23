@@ -5,14 +5,13 @@ import tornado.websocket
 from tornado.httpserver import HTTPServer
 
 class ClientHandler(tornado.websocket.WebSocketHandler):
-    def on_message(self, message):
-        print "got message %r" % message
+    pass
 
 class WebsocketServer(tornado.web.Application):
-    def __init__(self):
+    def __init__(self, client_handler=ClientHandler, settings={}):
         tornado.web.Application.__init__(
             self,
-            [(WEBSOCKET_APPLICATION, ClientHandler)],
+            [(WEBSOCKET_APPLICATION, client_handler, settings)],
             debug=True)
         self._loop = tornado.ioloop.IOLoop.instance()
         self._listen(WEBSOCKET_PORT)

@@ -4,7 +4,7 @@ import glob
 import random
 from scheduler import Scheduler
 import copy
-from server import WebsocketServer
+from server import WebsocketServer, ClientHandler
 import threading
 
 DEFAULT_SOUND_PARAMS = {
@@ -34,7 +34,7 @@ class Sequencer:
         self._synth = SynthController()
         self._synth.launch_engine()
         self._synth.connect(self._synth.lang_port)
-        self._start_websocket_server()
+        self._setup_websocket_server()
 
     def play(self, sound, looped=0):
         params = self._params.sounds[sound]
@@ -104,11 +104,20 @@ class Sequencer:
         for group in self._groups:
             group.process()
 
-    def _start_websocket_server(self):
-        self._server = WebsocketServer()
+    def _setup_websocket_server(self):
+        self._server = WebsocketServer(ControlPanelHandler, {"sequencer": self})
         server_thread = threading.Thread(target=self._server.start)
         server_thread.daemon = True
         server_thread.start()
+
+
+class ControlPanelHandler(ClientHandler):
+    def __init__(self, *args, **kwargs):
+        self._sequencer = kwargs.pop("sequencer")
+        super(ControlPanelHandler, self).__init__(*args, **kwargs)
+        
+    def on_message(self, message):
+        print "got message %r" % message
 
 
 PLAYING, IDLE, WAITING_TO_PLAY = range(3)
