@@ -110,18 +110,10 @@ OSCresponder.new(nil, "/play", {
 		sendGain = sendGain_dB.dbamp;
 	});
 
-    "name:".post; name.postln;
-    "pan:".post; pan.postln;
-    "fade:".post; fade.postln;
-	"gain:".post; gain.postln;
-	"sendName:".post; sendName.postln;
+    "/play ".post; name.postln;
     buf = ~sounds[name];
-    "buf:".post; buf.postln;
-    "send:".post; send.postln;
-    "sendGain:".post; sendGain.postln;
     if(buf == nil, {
-		"WARNING: sound not found: ".post;
-		name.postln;
+		"WARNING: sound not found: ".post; name.postln;
 	}, {
 		"numSynths=".post; s.numSynths.postln;
 		if(buf.numChannels == 2, {
