@@ -47,7 +47,7 @@ class MainWindow(QWidget):
 
     def _param_value_to_slider_value(self, param_name, value):
         param_config = PARAMS_CONFIG[param_name]
-        return int((value - param_config["min"]) / (
+        return int(float(value - param_config["min"]) / (
                 param_config["max"] - param_config["min"]) * SLIDER_PRECISION)
 
     def _add_bus_controls(self):
