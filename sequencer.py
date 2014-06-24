@@ -11,7 +11,7 @@ import collections
 
 DEFAULT_SOUND_PARAMS = {
     "pan": 0,
-    "gain": 1,
+    "gain": 0,
     "fade": None,
     "send": "master",
     "send_gain": 0,

@@ -9,12 +9,19 @@ import re
 
 SLIDER_PRECISION = 1000
 
+PARAMS_CONFIG = {
+    "gain":
+        {"min": -100,
+         "max": 50}
+    }
+
 class MainWindow(QWidget):
     def __init__(self):
         QWidget.__init__(self)
 
     def _add_controls(self):
-        self._layout = QFormLayout()
+        self._layout = QGridLayout()
+        self._row = 0
         self._add_track_controls()
         self._add_bus_controls()
         self.setLayout(self._layout)
@@ -24,24 +31,31 @@ class MainWindow(QWidget):
             self._add_track_control(track)
 
     def _add_track_control(self, track):
+        value = track["params"]["gain"]
         gain_slider = self._create_slider()
-        self._layout.addRow(
-            QLabel(track["name"]),
-            gain_slider)
+        gain_slider.setValue(self._param_value_to_slider_value("gain", value))
+        gain_label = QLabel(str(value))
+        self._add_row([
+            QLabel(track["name"]), gain_slider, gain_label])
 
     def _create_slider(self):
         slider = QSlider(Qt.Horizontal)
         slider.setRange(0, SLIDER_PRECISION)
         slider.setSingleStep(1)
-        slider.setFixedSize(100, 20)
+        slider.setFixedSize(200, 30)
         return slider
-    
+
+    def _param_value_to_slider_value(self, param_name, value):
+        param_config = PARAMS_CONFIG[param_name]
+        return int((value - param_config["min"]) / (
+                param_config["max"] - param_config["min"]) * SLIDER_PRECISION)
+
     def _add_bus_controls(self):
         for bus in self._buses:
             self._add_bus_control(bus)
 
     def _add_bus_control(self, bus):
-        self._layout.addRow(QLabel(bus))
+        self._add_row([QLabel(bus)])
 
     def customEvent(self, custom_qt_event):
         custom_qt_event.callback()
@@ -52,6 +66,11 @@ class MainWindow(QWidget):
             self._add_controls()
         else:
             raise Exception("unknown event type %r" % event.type)
+
+    def _add_row(self, cells):
+        for column, cell in enumerate(cells):
+            self._layout.addWidget(cell, self._row, column, Qt.AlignLeft)
+        self._row += 1
 
 class CustomQtEvent(QEvent):
     EVENT_TYPE = QEvent.Type(QEvent.registerEventType())
