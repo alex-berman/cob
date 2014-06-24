@@ -22,17 +22,12 @@ DEFAULT_BUS_PARAMS = {
     "reverb_room": 0,
     "reverb_damp": 1}
 
-class Parameters:
-    sounds = {}
-    buses = {}
-
 class Sequencer:
     def __init__(self):
         self._sounds = {}
         self._tracks = collections.OrderedDict()
-        self._buses = []
+        self._buses = collections.OrderedDict()
         self._groups = []
-        self._params = Parameters()
         self._scheduler = Scheduler()
         SynthController.kill_potential_engine_from_previous_process()
         self._synth = SynthController()
@@ -47,7 +42,9 @@ class Sequencer:
         return self._buses
 
     def play(self, sound, looped=0):
-        params = self._params.sounds[sound]
+        track_name = self._sounds[sound]["track_name"]
+        track = self._tracks[track_name]
+        params = track["params"]
         self._synth.play(
             sound,
             params["pan"],
@@ -79,14 +76,16 @@ class Sequencer:
     def load_sound(self, sound):
         self._synth.load_sound(sound)
         self._sounds[sound] = {"is_playing": False}
-        self._params.sounds[sound] = copy.copy(DEFAULT_SOUND_PARAMS)
 
-    def add_track(self, name, pattern, params):
+    def add_track(self, name, pattern, params_overrides):
+        params = copy.copy(DEFAULT_SOUND_PARAMS)
+        params.update(params_overrides)
         sounds = glob.glob(pattern)
-        for sound in sounds:
-            self._params.sounds[sound].update(params)
         track = {"name": name,
-                 "sounds": sounds}
+                 "sounds": sounds,
+                 "params": params}
+        for sound in sounds:
+            self._sounds[sound]["track_name"] = name
         self._tracks[name] = track
 
     def add_group(self, pattern, params):
@@ -97,11 +96,13 @@ class Sequencer:
 
     def add_bus(self, name):
         self._synth.add_bus(name)
-        self._buses.append(name)
-        self._params.buses[name] = copy.copy(DEFAULT_BUS_PARAMS)
+        self._buses[name] = {
+            "name": name,
+            "params": copy.copy(DEFAULT_BUS_PARAMS)
+            }
 
     def set_bus_params(self, bus, new_params):
-        params = self._params.buses[bus]
+        params = self._buses[bus]["params"]
         params.update(new_params)
         self._synth.set_bus_params(
             bus,
