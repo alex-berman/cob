@@ -31,7 +31,7 @@ class SynthController:
         initialized = False
         while self.lang_port is None or not initialized:
             line = self._sc_process.stdout.readline().strip()
-            print "SC: %s" % line
+            self._log("SC: %s" % line)
             m = re.search('langPort=(\d+)', line)
             if m:
                 self.lang_port = int(m.group(1))
@@ -48,9 +48,9 @@ class SynthController:
 
     def _read_sc_output(self):
         while self._listening_to_engine:
-            line = self._sc_process.stdout.readline()
+            line = self._sc_process.stdout.readline().strip("\r\n")
             if line:
-                print "SC: %s" % line,
+                self._log("SC: %s" % line)
 
     def connect(self, port):
         self._lock = threading.Lock()
@@ -74,14 +74,14 @@ class SynthController:
         if self._listening_to_engine:
             self._listening_to_engine = False
             self._send("/shutdown")
-            self.logger.info("waiting for SC output thread to finish")
+            self._log("waiting for SC output thread to finish")
             self._sc_output_thread.join()
-            self.logger.info("closing SC pipe")
+            self._log("closing SC pipe")
             self._sc_process.stdin.close()
             self._sc_process.stdout.close()
-            self.logger.info("waiting for SC process to exit")
+            self._log("waiting for SC process to exit")
             self._sc_process.wait()
-            self.logger.info("SC process exited")
+            self._log("SC process exited")
         self.target = None
 
     def load_sound(self, filename):
@@ -131,3 +131,7 @@ class SynthController:
     def _send(self, command, *args):
         with self._lock:
             liblo.send(self.target, command, *args)
+
+    def _log(self, string):
+        print string
+        self.logger.debug(string)

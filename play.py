@@ -4,6 +4,11 @@ MAG_PAN = -1
 HANNABIELL_PAN = 1
 
 from sequencer import Sequencer
+import logging
+
+logging.basicConfig(filename="play.log",
+                    level=logging.DEBUG,
+                    filemode="w")
 
 sequencer = Sequencer()
 sequencer.load_sounds("sound/*/*.wav")
