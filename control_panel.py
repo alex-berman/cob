@@ -21,6 +21,7 @@ class MainWindow(QWidget):
 
     def _add_controls(self):
         self._layout = QGridLayout()
+        self._track_controls = {}
         self._row = 0
         self._add_track_controls()
         self._add_bus_controls()
@@ -32,11 +33,15 @@ class MainWindow(QWidget):
 
     def _add_track_control(self, track):
         value = track["params"]["gain"]
+        gain_param = PARAMS_CONFIG["gain"]
         gain_slider = self._create_slider()
-        gain_slider.setValue(self._param_value_to_slider_value("gain", value))
-        gain_label = QLabel(str(value))
+        gain_slider.valueChanged.connect(
+            lambda value: self._slider_value_changed(track["name"], gain_param, value))
+        gain_label = QLabel()
         self._add_row([
             QLabel(track["name"]), gain_slider, gain_label])
+        self._track_controls[track["name"]] = {"gain_label": gain_label}
+        gain_slider.setValue(self._param_value_to_slider_value(gain_param, value))
 
     def _create_slider(self):
         slider = QSlider(Qt.Horizontal)
@@ -45,10 +50,17 @@ class MainWindow(QWidget):
         slider.setFixedSize(200, 30)
         return slider
 
-    def _param_value_to_slider_value(self, param_name, value):
-        param_config = PARAMS_CONFIG[param_name]
-        return int(float(value - param_config["min"]) / (
-                param_config["max"] - param_config["min"]) * SLIDER_PRECISION)
+    def _param_value_to_slider_value(self, param, value):
+        return int(float(value - param["min"]) / (
+                param["max"] - param["min"]) * SLIDER_PRECISION)
+
+    def _slider_value_changed(self, track_name, param, slider_value):
+        value = self._slider_value_to_param_value(param, slider_value)
+        self._track_controls[track_name]["gain_label"].setText(str(value))
+
+    def _slider_value_to_param_value(self, param, slider_value):
+        return float(slider_value) / SLIDER_PRECISION * (param["max"] - param["min"]) + \
+            param["min"]
 
     def _add_bus_controls(self):
         for bus in self._buses:
