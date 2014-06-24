@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+MAG_PAN = -1
+HANNABIELL_PAN = 1
+
 from sequencer import Sequencer
 
 sequencer = Sequencer()
@@ -29,21 +32,25 @@ sequencer.set_bus_params("long_reverb", {
 
 # Water
 
-sequencer.set_params(
+sequencer.add_track(
+    "rumbling water",
     "sound/water/Sound 2 mindre rinn.wav",
     {"send": "long_reverb",
      "gain": 7.8})
-sequencer.set_params(
+sequencer.add_track(
+    "bubbles1",
     "sound/water/ZOOM0009a 44100 1.wav",
     {"send": "bubbles",
      "gain": -15.6,
      "pan": -0.8})
-sequencer.set_params(
+sequencer.add_track(
+    "bubbles2",
     "sound/water/ZOOM0009b 44100 1.wav",
     {"send": "bubbles",
      "gain": -15.6,
      "pan": 0})
-sequencer.set_params(
+sequencer.add_track(
+    "bubbles3",
     "sound/water/ZOOM0009c 44100 1.wav",
     {"send": "bubbles",
      "gain": -15.6,
@@ -65,20 +72,20 @@ sequencer.play(
 
 # Mag
 
-sequencer.set_params(
+sequencer.add_track(
+    "mag weak",
     "sound/mag/mag_weak*.wav",
     {"send": "long_reverb",
      "gain": 2.1,
-     "comp_threshold": -36.6})
-sequencer.set_params(
+     "comp_threshold": -36.6,
+     "pan": MAG_PAN})
+sequencer.add_track(
+    "mag breath",
     "sound/mag/mag_breath1.wav",
     {"send": "long_reverb",
      "gain": 0,
-     "comp_threshold": -36.6})
-
-sequencer.set_params(
-    "sound/mag/*.wav",
-    {"pan": -1})
+     "comp_threshold": -36.6,
+     "pan": MAG_PAN})
 
 sequencer.add_group(
     "sound/mag/*.wav",
@@ -88,33 +95,37 @@ sequencer.add_group(
 
 # Hannabiell
 
-sequencer.set_params(
+sequencer.add_track(
+    "hannabiell tone",
     "sound/hannabiell/tone*.wav",
     {"send": "hannabell_tone_reverb",
      "gain": -100,
      "comp_threshold": -36.6,
-     "send_gain": 12.4})
+     "send_gain": 12.4,
+     "pan": HANNABIELL_PAN})
 
-sequencer.set_params(
+sequencer.add_track(
+    "hannabiell breath",
     "sound/hannabiell/breath*.wav",
     {"send": "long_reverb",
      "gain": -10.5,
-     "comp_threshold": -30.8})
+     "comp_threshold": -30.8,
+     "pan": HANNABIELL_PAN})
 
-sequencer.set_params(
+sequencer.add_track(
+    "hannabiell fragment",
     "sound/hannabiell/fragment*.wav",
     {"send": "long_reverb",
-     "gain": +11.7})
+     "gain": +11.7,
+     "pan": HANNABIELL_PAN})
 
-sequencer.set_params(
+sequencer.add_track(
+    "hannabiell squeak",
     "sound/hannabiell/squeak*.wav",
     {"send": "long_reverb",
-     "gain": +0.3})
+     "gain": +0.3,
+     "pan": HANNABIELL_PAN})
 
-
-sequencer.set_params(
-    "sound/hannabiell/*.wav",
-    {"pan": 1})
 
 sequencer.add_group(
     "sound/hannabiell/*.wav",

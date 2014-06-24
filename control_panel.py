@@ -15,18 +15,18 @@ class MainWindow(QWidget):
 
     def _add_controls(self):
         self._layout = QFormLayout()
-        self._add_sound_controls()
+        self._add_track_controls()
         self._add_bus_controls()
         self.setLayout(self._layout)
 
-    def _add_sound_controls(self):
-        for sound in sorted(self._sounds):
-            self._add_sound_control(sound)
+    def _add_track_controls(self):
+        for name, track in self._tracks.iteritems():
+            self._add_track_control(track)
 
-    def _add_sound_control(self, sound):
+    def _add_track_control(self, track):
         gain_slider = self._create_slider()
         self._layout.addRow(
-            QLabel(self._sound_label(sound)),
+            QLabel(track["name"]),
             gain_slider)
 
     def _create_slider(self):
@@ -43,19 +43,12 @@ class MainWindow(QWidget):
     def _add_bus_control(self, bus):
         self._layout.addRow(QLabel(bus))
 
-    def _sound_label(self, filename):
-        matcher = re.match(r"sound\/(.*)\.wav", filename)
-        if matcher:
-            return matcher.group(1)
-        else:
-            return filename
-
     def customEvent(self, custom_qt_event):
         custom_qt_event.callback()
 
     def received_event(self, event):
         if event.type == Event.CONTROLABLES:
-            self._sounds, self._buses = event.content
+            self._tracks, self._buses = event.content
             self._add_controls()
         else:
             raise Exception("unknown event type %r" % event.type)

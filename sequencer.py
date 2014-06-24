@@ -7,6 +7,7 @@ import copy
 from server import WebsocketServer, ClientHandler
 import threading
 from event import Event
+import collections
 
 DEFAULT_SOUND_PARAMS = {
     "pan": 0,
@@ -28,6 +29,7 @@ class Parameters:
 class Sequencer:
     def __init__(self):
         self._sounds = {}
+        self._tracks = collections.OrderedDict()
         self._buses = []
         self._groups = []
         self._params = Parameters()
@@ -38,8 +40,8 @@ class Sequencer:
         self._synth.connect(self._synth.lang_port)
         self._setup_websocket_server()
 
-    def get_sounds(self):
-        return self._sounds
+    def get_tracks(self):
+        return self._tracks
 
     def get_buses(self):
         return self._buses
@@ -79,9 +81,13 @@ class Sequencer:
         self._sounds[sound] = {"is_playing": False}
         self._params.sounds[sound] = copy.copy(DEFAULT_SOUND_PARAMS)
 
-    def set_params(self, pattern, params):
-        for sound in glob.glob(pattern):
+    def add_track(self, name, pattern, params):
+        sounds = glob.glob(pattern)
+        for sound in sounds:
             self._params.sounds[sound].update(params)
+        track = {"name": name,
+                 "sounds": sounds}
+        self._tracks[name] = track
 
     def add_group(self, pattern, params):
         group = Group(self, params)
@@ -129,9 +135,9 @@ class ControlPanelHandler(ClientHandler):
         self._send_sounds()
 
     def _send_sounds(self):
-        sounds = self._sequencer.get_sounds().keys()
+        tracks = self._sequencer.get_tracks()
         buses = self._sequencer.get_buses()
-        self.send_event(Event(Event.CONTROLABLES, (sounds, buses)))
+        self.send_event(Event(Event.CONTROLABLES, (tracks, buses)))
 
     def on_message(self, message):
         print "got message %r" % message
