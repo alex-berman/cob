@@ -8,7 +8,8 @@ import logging
 
 logging.basicConfig(filename="play.log",
                     level=logging.DEBUG,
-                    filemode="w")
+                    filemode="w",
+                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 sequencer = Sequencer()
 sequencer.load_sounds("sound/*/*.wav")
