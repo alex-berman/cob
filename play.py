@@ -47,19 +47,19 @@ sequencer.add_track(
     "bubbles1",
     "sound/water/ZOOM0009a 44100 1.wav",
     {"send": "bubbles",
-     "gain": -15.6,
+     "gain": -35.6,
      "pan": -0.8})
 sequencer.add_track(
     "bubbles2",
     "sound/water/ZOOM0009b 44100 1.wav",
     {"send": "bubbles",
-     "gain": -15.6,
+     "gain": -65.6,
      "pan": 0})
 sequencer.add_track(
     "bubbles3",
     "sound/water/ZOOM0009c 44100 1.wav",
     {"send": "bubbles",
-     "gain": -15.6,
+     "gain": -35.6,
      "pan": 0.8})
 
 sequencer.play(
@@ -95,8 +95,8 @@ sequencer.add_track(
 
 sequencer.add_group(
     "sound/mag/*.wav",
-    {"silence_min": 10,
-     "silence_max": 30})
+    {"silence_min": 20,
+     "silence_max": 60})
 
 
 # Hannabiell
@@ -135,8 +135,8 @@ sequencer.add_track(
 
 sequencer.add_group(
     "sound/hannabiell/*.wav",
-    {"silence_min": 10,
-     "silence_max": 30})
+    {"silence_min": 20,
+     "silence_max": 60})
 
 
 # Run everything
