@@ -1,5 +1,6 @@
 class Event:
     CONTROLABLES = "CONTROLABLES"
+    SET_PARAM = "SET_PARAM"
 
     def __init__(self, type_, content):
         self.type = type_

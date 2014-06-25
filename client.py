@@ -22,3 +22,5 @@ class WebsocketClient(ws4py.client.threadedclient.WebSocketClient):
     def received_event(self, event):
         pass
 
+    def send_event(self, event):
+        self.send(cPickle.dumps(event))

@@ -126,6 +126,18 @@ class Sequencer:
         server_thread.daemon = True
         server_thread.start()
 
+    def received_event(self, event):
+        if event.type == Event.SET_PARAM:
+            self._set_param(
+                event.content["track"],
+                event.content["param"],
+                event.content["value"])
+        else:
+            self._log("WARNING: unknown event type %r" % event.type)
+
+    def _set_param(self, track_name, param, value):
+        print "_set_param(%r, %r, %r)" % (track_name, param, value)
+
 
 class ControlPanelHandler(ClientHandler):
     def __init__(self, *args, **kwargs):
@@ -140,8 +152,8 @@ class ControlPanelHandler(ClientHandler):
         buses = self._sequencer.get_buses()
         self.send_event(Event(Event.CONTROLABLES, (tracks, buses)))
 
-    def on_message(self, message):
-        print "got message %r" % message
+    def received_event(self, event):
+        self._sequencer.received_event(event)
 
 
 PLAYING, IDLE, WAITING_TO_PLAY = range(3)

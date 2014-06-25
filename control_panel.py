@@ -57,6 +57,10 @@ class MainWindow(QWidget):
     def _slider_value_changed(self, track_name, param, slider_value):
         value = self._slider_value_to_param_value(param, slider_value)
         self._track_controls[track_name]["gain_label"].setText(str(value))
+        client.send_event(
+            Event(Event.SET_PARAM, {"track": track_name,
+                                    "param": "gain",
+                                    "value": value}))
 
     def _slider_value_to_param_value(self, param, slider_value):
         return float(slider_value) / SLIDER_PRECISION * (param["max"] - param["min"]) + \

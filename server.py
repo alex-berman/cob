@@ -6,6 +6,10 @@ from tornado.httpserver import HTTPServer
 import cPickle
 
 class ClientHandler(tornado.websocket.WebSocketHandler):
+    def on_message(self, message):
+        event = cPickle.loads(str(message))
+        self.received_event(event)
+        
     def send_event(self, event):
         self.write_message(cPickle.dumps(event))
 
