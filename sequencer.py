@@ -136,7 +136,7 @@ class Sequencer:
             self._log("WARNING: unknown event type %r" % event.type)
 
     def _set_param(self, track_name, param, value):
-        print "_set_param(%r, %r, %r)" % (track_name, param, value)
+        self._tracks[track_name]["params"][param] = value
 
 
 class ControlPanelHandler(ClientHandler):
