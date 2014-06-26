@@ -13,7 +13,10 @@ SLIDER_PRECISION = 1000
 PARAMS_CONFIG = {
     "gain_adjustment":
         {"min": -30,
-         "max": 30}
+         "max": 30},
+    "rate":
+        {"min": 0.1,
+         "max": 3.0},
     }
 
 class MainWindow(QWidget):
@@ -58,19 +61,23 @@ class MainWindow(QWidget):
             self._add_track_control(track)
 
     def _add_track_control(self, track):
+        self._track_controls[track["name"]] = {}
+        self._add_track_param_control(track, "gain_adjustment")
+
+    def _add_track_param_control(self, track, param_name):
         track_name = track["name"]
-        value = self._params["tracks"][track_name]["gain_adjustment"]
-        gain_param = PARAMS_CONFIG["gain_adjustment"]
-        gain_slider = self._create_slider()
-        gain_slider.valueChanged.connect(
-            lambda value: self._slider_value_changed(track_name, gain_param, value))
-        gain_label = QLabel()
+        value = self._params["tracks"][track_name][param_name]
+        param = PARAMS_CONFIG[param_name]
+        slider = self._create_slider()
+        slider.valueChanged.connect(
+            lambda value: self._slider_value_changed(track_name, param_name, value))
+        label = QLabel()
         self._add_row([
-            QLabel(track_name), gain_slider, gain_label])
-        self._track_controls[track_name] = {
-            "gain_slider": gain_slider,
-            "gain_label": gain_label}
-        gain_slider.setValue(self._param_value_to_slider_value(gain_param, value))
+            QLabel(track_name), slider, label])
+        self._track_controls[track_name][param_name] = {
+            "slider": slider,
+            "label": label}
+        slider.setValue(self._param_value_to_slider_value(param, value))
 
     def _create_slider(self):
         slider = QSlider(Qt.Horizontal)
@@ -83,19 +90,20 @@ class MainWindow(QWidget):
         return int(float(value - param["min"]) / (
                 param["max"] - param["min"]) * SLIDER_PRECISION)
 
-    def _slider_value_changed(self, track_name, param, slider_value):
+    def _slider_value_changed(self, track_name, param_name, slider_value):
+        param = PARAMS_CONFIG[param_name]
         value = self._slider_value_to_param_value(param, slider_value)
-        self._param_value_changed(track_name, param, value, manually=True)
+        self._param_value_changed(track_name, param_name, value, manually=True)
 
-    def _param_value_changed(self, track_name, param, value, manually=False):
+    def _param_value_changed(self, track_name, param_name, value, manually=False):
         if not manually:
-            slider_value = self._param_value_to_slider_value(
-                PARAMS_CONFIG[param], value)
-            self._track_controls[track_name]["gain_slider"].setValue(slider_value)
-        self._track_controls[track_name]["gain_label"].setText(str(value))
+            param = PARAMS_CONFIG[param_name]
+            slider_value = self._param_value_to_slider_value(param, value)
+            self._track_controls[track_name][param_name]["slider"].setValue(slider_value)
+        self._track_controls[track_name][param_name]["label"].setText(str(value))
         client.send_event(
             Event(Event.SET_PARAM, {"track": track_name,
-                                    "param": "gain_adjustment",
+                                    "param": param_name,
                                     "value": value}))
 
     def _slider_value_to_param_value(self, param, slider_value):
