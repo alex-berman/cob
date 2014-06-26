@@ -135,3 +135,6 @@ class SynthController:
     def _log(self, string):
         print string
         self.logger.debug(string)
+
+    def set_param(self, sound, param, value):
+        self._send("/set_%s" % param, sound, value)

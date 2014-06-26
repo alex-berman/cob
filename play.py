@@ -53,7 +53,8 @@ sequencer.add_track(
     "bubbles2",
     "sound/water/ZOOM0009b 44100 1.wav",
     {"send": "bubbles",
-     "gain": -65.6,
+     "gain": -35.6,
+     "gain_adjustment": -20,
      "pan": 0})
 sequencer.add_track(
     "bubbles3",

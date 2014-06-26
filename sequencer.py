@@ -15,6 +15,7 @@ DEFAULT_SOUND_PARAMS = {
     "fade": None,
     "send": "master",
     "send_gain": 0,
+    "gain_adjustment": 0,
     "comp_threshold": 0}
 
 DEFAULT_BUS_PARAMS = {
@@ -49,10 +50,10 @@ class Sequencer:
             sound,
             params["pan"],
             params["fade"],
-            params["gain"],
+            params["gain"] + params["gain_adjustment"],
             looped,
             params["send"],
-            params["send_gain"],
+            params["send_gain"] + params["gain_adjustment"],
             params["comp_threshold"])
         self._sounds[sound]["is_playing"] = True
         if looped == 0:
@@ -134,9 +135,17 @@ class Sequencer:
                 event.content["value"])
         else:
             self._log("WARNING: unknown event type %r" % event.type)
-
+            
     def _set_param(self, track_name, param, value):
-        self._tracks[track_name]["params"][param] = value
+        track = self._tracks[track_name]
+        params = track["params"]
+        params[param] = value
+        for sound in track["sounds"]:
+            if param == "gain_adjustment":
+                self._synth.set_param(sound, "gain",
+                                      params["gain"] + params["gain_adjustment"])
+                self._synth.set_param(sound, "send_gain",
+                                      params["send_gain"] + params["gain_adjustment"])
 
 
 class ControlPanelHandler(ClientHandler):

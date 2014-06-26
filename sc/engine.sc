@@ -147,6 +147,27 @@ OSCresponder.new(nil, "/play", {
 	});
 }).add; 
 
+OSCresponder.new(nil, "/set_gain", {
+	arg t, r, msg;
+    var name = msg[1].asString;
+    var value_dB = msg[2];
+	var synth = ~synths[name];
+	if(synth == nil, {}, {
+		"/set_gain ".post; name.post; " ".post; value_dB.postln;
+		synth.set(\gain, value_dB.dbamp);
+	});
+}).add;
+
+OSCresponder.new(nil, "/set_send_gain", {
+	arg t, r, msg;
+    var name = msg[1].asString;
+    var value_dB = msg[2];
+	var synth = ~synths[name];
+	if(synth == nil, {}, {
+		"/set_send_gain ".post; name.post; " ".post; value_dB.postln;
+		synth.set(\sendGain, value_dB.dbamp);
+	});
+}).add;
 
 SynthDef(\add_reverb_stereo, {
 	arg bus, mix = 0.75, room = 0.85, damp = 1.0;

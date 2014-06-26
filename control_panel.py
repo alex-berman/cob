@@ -10,9 +10,9 @@ import re
 SLIDER_PRECISION = 1000
 
 PARAMS_CONFIG = {
-    "gain":
-        {"min": -100,
-         "max": 50}
+    "gain_adjustment":
+        {"min": -30,
+         "max": 30}
     }
 
 class MainWindow(QWidget):
@@ -32,8 +32,8 @@ class MainWindow(QWidget):
             self._add_track_control(track)
 
     def _add_track_control(self, track):
-        value = track["params"]["gain"]
-        gain_param = PARAMS_CONFIG["gain"]
+        value = track["params"]["gain_adjustment"]
+        gain_param = PARAMS_CONFIG["gain_adjustment"]
         gain_slider = self._create_slider()
         gain_slider.valueChanged.connect(
             lambda value: self._slider_value_changed(track["name"], gain_param, value))
@@ -59,7 +59,7 @@ class MainWindow(QWidget):
         self._track_controls[track_name]["gain_label"].setText(str(value))
         client.send_event(
             Event(Event.SET_PARAM, {"track": track_name,
-                                    "param": "gain",
+                                    "param": "gain_adjustment",
                                     "value": value}))
 
     def _slider_value_to_param_value(self, param, slider_value):
