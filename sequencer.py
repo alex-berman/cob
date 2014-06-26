@@ -10,6 +10,7 @@ from event import Event
 import collections
 import logging
 import cPickle
+import os
 
 PARAMS_FILENAME = "params.data"
 
@@ -122,6 +123,10 @@ class Sequencer:
             params["reverb_mix"],
             params["reverb_room"],
             params["reverb_damp"])
+
+    def try_to_load_params(self):
+        if os.path.exists(PARAMS_FILENAME):
+            self.load_params()
 
     def run_main_loop(self):
         while True:

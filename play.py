@@ -147,4 +147,5 @@ sequencer.add_group(
 
 # Run everything
 
+sequencer.try_to_load_params()
 sequencer.run_main_loop()
