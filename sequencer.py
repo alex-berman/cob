@@ -141,11 +141,12 @@ class Sequencer:
         params = track["params"]
         params[param] = value
         for sound in track["sounds"]:
-            if param == "gain_adjustment":
-                self._synth.set_param(sound, "gain",
-                                      params["gain"] + params["gain_adjustment"])
-                self._synth.set_param(sound, "send_gain",
-                                      params["send_gain"] + params["gain_adjustment"])
+            if self._sounds[sound]["is_playing"]:
+                if param == "gain_adjustment":
+                    self._synth.set_param(sound, "gain",
+                                          params["gain"] + params["gain_adjustment"])
+                    self._synth.set_param(sound, "send_gain",
+                                          params["send_gain"] + params["gain_adjustment"])
 
 
 class ControlPanelHandler(ClientHandler):
