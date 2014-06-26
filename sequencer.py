@@ -157,6 +157,7 @@ class Sequencer:
                                       params["gain"] + params["gain_adjustment"])
                 self._synth.set_param(sound, "send_gain",
                                       params["send_gain"] + params["gain_adjustment"])
+                self._synth.set_param(sound, "rate", params["rate"])
 
     def save_params(self):
         f = open(PARAMS_FILENAME, "w")

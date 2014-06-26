@@ -13,10 +13,12 @@ SLIDER_PRECISION = 1000
 PARAMS_CONFIG = {
     "gain_adjustment":
         {"min": -30,
-         "max": 30},
+         "max": 30,
+         "width": 200},
     "rate":
         {"min": 0.1,
-         "max": 3.0},
+         "max": 3.0,
+         "width": 100},
     }
 
 class MainWindow(QWidget):
@@ -57,33 +59,37 @@ class MainWindow(QWidget):
         self._add_bus_controls()
 
     def _add_track_controls(self):
+        self._add_row([None, QLabel("Gain"), None, QLabel("Pitch")])
         for name, track in self._tracks.iteritems():
             self._add_track_control(track)
 
     def _add_track_control(self, track):
+        row = [QLabel(track["name"])]
         self._track_controls[track["name"]] = {}
-        self._add_track_param_control(track, "gain_adjustment")
+        self._add_track_param_control(row, track, "gain_adjustment")
+        self._add_track_param_control(row, track, "rate")
+        self._add_row(row)
 
-    def _add_track_param_control(self, track, param_name):
+    def _add_track_param_control(self, row, track, param_name):
         track_name = track["name"]
         value = self._params["tracks"][track_name][param_name]
         param = PARAMS_CONFIG[param_name]
-        slider = self._create_slider()
+        slider = self._create_slider(param["width"])
         slider.valueChanged.connect(
             lambda value: self._slider_value_changed(track_name, param_name, value))
         label = QLabel()
-        self._add_row([
-            QLabel(track_name), slider, label])
         self._track_controls[track_name][param_name] = {
             "slider": slider,
             "label": label}
         slider.setValue(self._param_value_to_slider_value(param, value))
+        row.append(slider)
+        row.append(label)
 
-    def _create_slider(self):
+    def _create_slider(self, width):
         slider = QSlider(Qt.Horizontal)
         slider.setRange(0, SLIDER_PRECISION)
         slider.setSingleStep(1)
-        slider.setFixedSize(200, 30)
+        slider.setFixedSize(width, 30)
         return slider
 
     def _param_value_to_slider_value(self, param, value):
@@ -100,7 +106,7 @@ class MainWindow(QWidget):
             param = PARAMS_CONFIG[param_name]
             slider_value = self._param_value_to_slider_value(param, value)
             self._track_controls[track_name][param_name]["slider"].setValue(slider_value)
-        self._track_controls[track_name][param_name]["label"].setText(str(value))
+        self._track_controls[track_name][param_name]["label"].setText("%.1f"%value)
         client.send_event(
             Event(Event.SET_PARAM, {"track": track_name,
                                     "param": param_name,
@@ -139,7 +145,8 @@ class MainWindow(QWidget):
 
     def _add_row(self, cells):
         for column, cell in enumerate(cells):
-            self._layout.addWidget(cell, self._row, column, Qt.AlignLeft)
+            if cell is not None:
+                self._layout.addWidget(cell, self._row, column, Qt.AlignLeft)
         self._row += 1
 
 class CustomQtEvent(QEvent):

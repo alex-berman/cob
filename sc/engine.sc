@@ -155,7 +155,6 @@ OSCresponder.new(nil, "/set_gain", {
     var value_dB = msg[2];
 	var synth = ~synths[name];
 	if(synth == nil, {}, {
-		"/set_gain ".post; name.post; " ".post; value_dB.postln;
 		synth.set(\gain, value_dB.dbamp);
 	});
 }).add;
@@ -166,8 +165,17 @@ OSCresponder.new(nil, "/set_send_gain", {
     var value_dB = msg[2];
 	var synth = ~synths[name];
 	if(synth == nil, {}, {
-		"/set_send_gain ".post; name.post; " ".post; value_dB.postln;
 		synth.set(\sendGain, value_dB.dbamp);
+	});
+}).add;
+
+OSCresponder.new(nil, "/set_rate", {
+	arg t, r, msg;
+    var name = msg[1].asString;
+    var value = msg[2];
+	var synth = ~synths[name];
+	if(synth == nil, {}, {
+		synth.set(\rateFactor, value);
 	});
 }).add;
 
