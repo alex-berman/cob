@@ -137,35 +137,37 @@ class Sequencer:
         server_thread.daemon = True
         server_thread.start()
 
-    def received_event(self, event):
-        if event.type == Event.SET_PARAM:
-            self._set_param(
-                event.content["track"],
-                event.content["param"],
-                event.content["value"])
-        elif event.type == Event.SAVE_PARAMS:
-            self._save_params()
-        else:
-            self._log("WARNING: unknown event type %r" % event.type)
-            
-    def _set_param(self, track_name, param, value):
+    def set_param(self, track_name, param, value):
         track = self._tracks[track_name]
         params = self._params["tracks"][track_name]
         params[param] = value
+        self._on_track_params_changed(track)
+
+    def _on_tracks_params_changed(self):
+        for track in self._tracks.values():
+            self._on_track_params_changed(track)
+
+    def _on_track_params_changed(self, track):
+        params = self._params["tracks"][track["name"]]
         for sound in track["sounds"]:
             if self._sounds[sound]["is_playing"]:
-                if param == "gain_adjustment":
-                    self._synth.set_param(sound, "gain",
-                                          params["gain"] + params["gain_adjustment"])
-                    self._synth.set_param(sound, "send_gain",
-                                          params["send_gain"] + params["gain_adjustment"])
+                self._synth.set_param(sound, "gain",
+                                      params["gain"] + params["gain_adjustment"])
+                self._synth.set_param(sound, "send_gain",
+                                      params["send_gain"] + params["gain_adjustment"])
 
-    def _save_params(self):
+    def save_params(self):
         f = open(PARAMS_FILENAME, "w")
         cPickle.dump(self._params, f)
         f.close()
+
+    def load_params(self):
+        f = open(PARAMS_FILENAME, "r")
+        self._params = cPickle.load(f)
+        self._on_tracks_params_changed()
+        f.close()
         
-    def _log(self, string):
+    def log(self, string):
         print string
         self.logger.debug(string)
 
@@ -185,7 +187,18 @@ class ControlPanelHandler(ClientHandler):
         self.send_event(Event(Event.CONTROLABLES, (tracks, buses, params)))
 
     def received_event(self, event):
-        self._sequencer.received_event(event)
+        if event.type == Event.SET_PARAM:
+            self._sequencer.set_param(
+                event.content["track"],
+                event.content["param"],
+                event.content["value"])
+        elif event.type == Event.SAVE_PARAMS:
+            self._sequencer.save_params()
+        elif event.type == Event.LOAD_PARAMS:
+            self._sequencer.load_params()
+            self.send_event(Event(Event.PARAMS, self._sequencer.get_params()))
+        else:
+            self._sequencer.log("WARNING: unknown event type %r" % event.type)
 
 
 PLAYING, IDLE, WAITING_TO_PLAY = range(3)

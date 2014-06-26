@@ -30,12 +30,20 @@ class MainWindow(QWidget):
     def _create_main_menu(self):
         self._main_menu = self._menu_bar.addMenu("Main")
         self._add_save_action()
+        self._add_restore_action()
 
     def _add_save_action(self):
         action = QAction("Save", self)
         action.setShortcut("Ctrl+S")
         action.triggered.connect(
             lambda: client.send_event(Event(Event.SAVE_PARAMS)))
+        self._main_menu.addAction(action)
+
+    def _add_restore_action(self):
+        action = QAction("Restore", self)
+        action.setShortcut("Ctrl+R")
+        action.triggered.connect(
+            lambda: client.send_event(Event(Event.LOAD_PARAMS)))
         self._main_menu.addAction(action)
 
     def _add_controls(self):
@@ -58,7 +66,9 @@ class MainWindow(QWidget):
         gain_label = QLabel()
         self._add_row([
             QLabel(track_name), gain_slider, gain_label])
-        self._track_controls[track_name] = {"gain_label": gain_label}
+        self._track_controls[track_name] = {
+            "gain_slider": gain_slider,
+            "gain_label": gain_label}
         gain_slider.setValue(self._param_value_to_slider_value(gain_param, value))
 
     def _create_slider(self):
@@ -74,6 +84,13 @@ class MainWindow(QWidget):
 
     def _slider_value_changed(self, track_name, param, slider_value):
         value = self._slider_value_to_param_value(param, slider_value)
+        self._param_value_changed(track_name, param, value, manually=True)
+
+    def _param_value_changed(self, track_name, param, value, manually=False):
+        if not manually:
+            slider_value = self._param_value_to_slider_value(
+                PARAMS_CONFIG[param], value)
+            self._track_controls[track_name]["gain_slider"].setValue(slider_value)
         self._track_controls[track_name]["gain_label"].setText(str(value))
         client.send_event(
             Event(Event.SET_PARAM, {"track": track_name,
@@ -98,8 +115,18 @@ class MainWindow(QWidget):
         if event.type == Event.CONTROLABLES:
             self._tracks, self._buses, self._params = event.content
             self._add_controls()
+        elif event.type == Event.PARAMS:
+            self._params = event.content
+            self._params_changed()
         else:
             raise Exception("unknown event type %r" % event.type)
+
+    def _params_changed(self):
+        for track_name in self._tracks.keys():
+            self._param_value_changed(
+                track_name,
+                "gain_adjustment",
+                self._params["tracks"][track_name]["gain_adjustment"])
 
     def _add_row(self, cells):
         for column, cell in enumerate(cells):

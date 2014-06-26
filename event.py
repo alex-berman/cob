@@ -2,6 +2,8 @@ class Event:
     CONTROLABLES = "CONTROLABLES"
     SET_PARAM = "SET_PARAM"
     SAVE_PARAMS = "SAVE_PARAMS"
+    LOAD_PARAMS = "LOAD_PARAMS"
+    PARAMS = "PARAMS"
 
     def __init__(self, type_, content=None):
         self.type = type_
