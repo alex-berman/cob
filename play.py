@@ -42,18 +42,22 @@ sequencer.add_track(
     "rumbling water",
     "sound/water/Sound 2 mindre rinn.wav",
     {"send": "long_reverb",
-     "gain": 7.8})
+     "gain": 7.8,
+     "rate": 0.5,
+     })
 sequencer.add_track(
     "bubbles1",
     "sound/water/ZOOM0009a 44100 1.wav",
     {"send": "bubbles",
      "gain": -35.6,
+     "rate": 0.5,
      "pan": -0.8})
 sequencer.add_track(
     "bubbles2",
     "sound/water/ZOOM0009b 44100 1.wav",
     {"send": "bubbles",
      "gain": -35.6,
+     "rate": 0.5,
      "gain_adjustment": -20,
      "pan": 0})
 sequencer.add_track(
@@ -61,6 +65,7 @@ sequencer.add_track(
     "sound/water/ZOOM0009c 44100 1.wav",
     {"send": "bubbles",
      "gain": -35.6,
+     "rate": 0.5,
      "pan": 0.8})
 
 sequencer.play(

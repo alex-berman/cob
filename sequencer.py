@@ -20,7 +20,8 @@ DEFAULT_SOUND_PARAMS = {
     "send": "master",
     "send_gain": 0,
     "gain_adjustment": 0,
-    "comp_threshold": 0}
+    "comp_threshold": 0,
+    "rate": 1}
 
 DEFAULT_BUS_PARAMS = {
     "reverb_mix": 0,
@@ -63,6 +64,7 @@ class Sequencer:
             params["pan"],
             params["fade"],
             params["gain"] + params["gain_adjustment"],
+            params["rate"],
             looped,
             params["send"],
             params["send_gain"] + params["gain_adjustment"],

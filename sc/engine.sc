@@ -53,8 +53,7 @@ OSCresponder.new(nil, "/set_bus_params", {
 }).add;
 
 SynthDef(\play_stereo, {
-	arg buf, out, pan, fadein, gain, looped, send, sendGain, compThreshold;
-	var rateFactor = 0.5; // HACK: down-pitch water sound (which are all stereo)
+	arg buf, out, pan, fadein, gain, rateFactor, looped, send, sendGain, compThreshold;
 	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf)*rateFactor, loop:looped, doneAction:2);
 	sig = Compander.ar(
 		sig, sig,
@@ -71,8 +70,8 @@ SynthDef(\play_stereo, {
 }).send(s);
 
 SynthDef(\play_mono, {
-	arg buf, out, pan, fadein, gain, looped, send, sendGain, compThreshold;
-	var sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
+	arg buf, out, pan, fadein, gain, rateFactor, looped, send, sendGain, compThreshold;
+	var sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf)*rateFactor, loop:looped, doneAction:2);
 	sig = Compander.ar(
 		sig, sig,
 		thresh: compThreshold,
@@ -93,10 +92,11 @@ OSCresponder.new(nil, "/play", {
     var pan = msg[2];
     var fade = msg[3];
 	var gain_dB = msg[4];
-	var looped = msg[5];
-	var sendName = msg[6].asString;
-	var sendGain_dB = msg[7];
-	var compThreshold_dB = msg[8];
+	var rateFactor = msg[5];
+	var looped = msg[6];
+	var sendName = msg[7].asString;
+	var sendGain_dB = msg[8];
+	var compThreshold_dB = msg[9];
     var buf;
     var channel = 0;
 	var gain = gain_dB.dbamp;
@@ -124,6 +124,7 @@ OSCresponder.new(nil, "/play", {
 				\pan, pan,
 				\fadein, fade,
 				\gain, gain,
+				\rateFactor, rateFactor,
 				\looped, looped,
 				\send, send,
 				\sendGain, sendGain,
@@ -136,6 +137,7 @@ OSCresponder.new(nil, "/play", {
 					\pan, pan,
 					\fadein, fade,
 					\gain, gain,
+					\rateFactor, rateFactor,
 					\looped, looped,
 					\send, send,
 					\sendGain, sendGain,
