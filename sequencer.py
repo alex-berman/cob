@@ -11,6 +11,7 @@ import collections
 import logging
 import cPickle
 import os
+from colour_receiver import ColourReceiver
 
 PARAMS_FILENAME = "params.data"
 
@@ -35,17 +36,33 @@ class Sequencer:
             logger = logging.getLogger("Sequencer")
         self.logger = logger
         self._params = {"tracks": {},
-                        "buses": {}}
+                        "buses": {},
+                        "reference_colour": None}
         self._sounds = {}
         self._tracks = collections.OrderedDict()
         self._buses = collections.OrderedDict()
         self._groups = []
         self._scheduler = Scheduler()
+        self._setup_colour_receiver()
         SynthController.kill_potential_engine_from_previous_process()
         self._synth = SynthController()
         self._synth.launch_engine()
         self._synth.connect(self._synth.lang_port)
         self._setup_websocket_server()
+
+    def _setup_colour_receiver(self):
+        self._current_colour = None
+        self._colour_receiver = ColourReceiver()
+        self._colour_receiver.received_colour = self.set_current_colour        
+        self._colour_receiver.start()
+
+    def set_current_colour(self, rgb):
+        self._current_colour = rgb
+
+    def calibrate_colour(self):
+        self.log("calibrate_colour %s" % self._current_colour)
+        if self._current_colour is not None:
+            self._params["reference_colour"] = self._current_colour
 
     def get_tracks(self):
         return self._tracks
@@ -135,6 +152,7 @@ class Sequencer:
 
     def _process(self):
         self._scheduler.run_scheduled_events()
+        self._colour_receiver.serve()
         for group in self._groups:
             group.process()
 
@@ -205,6 +223,8 @@ class ControlPanelHandler(ClientHandler):
         elif event.type == Event.LOAD_PARAMS:
             self._sequencer.load_params()
             self.send_event(Event(Event.PARAMS, self._sequencer.get_params()))
+        elif event.type == Event.CALIBRATE_COLOUR:
+            self._sequencer.calibrate_colour()
         else:
             self._sequencer.log("WARNING: unknown event type %r" % event.type)
 

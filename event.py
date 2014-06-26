@@ -4,6 +4,7 @@ class Event:
     SAVE_PARAMS = "SAVE_PARAMS"
     LOAD_PARAMS = "LOAD_PARAMS"
     PARAMS = "PARAMS"
+    CALIBRATE_COLOUR = "CALIBRATE_COLOUR"
 
     def __init__(self, type_, content=None):
         self.type = type_

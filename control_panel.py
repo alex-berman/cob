@@ -37,6 +37,7 @@ class MainWindow(QWidget):
         self._main_menu = self._menu_bar.addMenu("Main")
         self._add_save_action()
         self._add_restore_action()
+        self._add_calibrate_action()
 
     def _add_save_action(self):
         action = QAction("Save", self)
@@ -50,6 +51,12 @@ class MainWindow(QWidget):
         action.setShortcut("Ctrl+R")
         action.triggered.connect(
             lambda: client.send_event(Event(Event.LOAD_PARAMS)))
+        self._main_menu.addAction(action)
+
+    def _add_calibrate_action(self):
+        action = QAction("Calibrate", self)
+        action.triggered.connect(
+            lambda: client.send_event(Event(Event.CALIBRATE_COLOUR)))
         self._main_menu.addAction(action)
 
     def _add_controls(self):
