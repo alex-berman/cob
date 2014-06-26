@@ -6,6 +6,7 @@ from PyQt4.QtGui import *
 from client import WebsocketClient
 from event import Event
 import re
+import argparse
 
 SLIDER_PRECISION = 1000
 
@@ -141,17 +142,21 @@ class CustomQtEvent(QEvent):
         self.callback = callback
 
 class Client(WebsocketClient):
-    def __init__(self, window):
+    def __init__(self, host, window):
         self._window = window
-        WebsocketClient.__init__(self)
+        WebsocketClient.__init__(self, host)
 
     def received_event(self, event):
         callback = lambda: self._window.received_event(event)
         QApplication.postEvent(self._window, CustomQtEvent(callback))
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-host", default="localhost")
+args = parser.parse_args()
+
 app = QApplication(sys.argv)
 window = MainWindow()
 window.show()
-client = Client(window)
+client = Client(args.host, window)
 client.connect()
 app.exec_()
