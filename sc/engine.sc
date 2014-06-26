@@ -54,7 +54,8 @@ OSCresponder.new(nil, "/set_bus_params", {
 
 SynthDef(\play_stereo, {
 	arg buf, out, pan, fadein, gain, looped, send, sendGain, compThreshold;
-	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf), loop:looped, doneAction:2);
+	var rateFactor = 0.5; // HACK: down-pitch water sound (which are all stereo)
+	var sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf)*rateFactor, loop:looped, doneAction:2);
 	sig = Compander.ar(
 		sig, sig,
 		thresh: compThreshold,
