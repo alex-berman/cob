@@ -18,29 +18,47 @@ PARAMS_CONFIG = {
 class MainWindow(QWidget):
     def __init__(self):
         QWidget.__init__(self)
+        self._create_menu()
+
+    def _create_menu(self):
+        self._layout = QGridLayout()
+        self._menu_bar = QMenuBar()
+        self._layout.setMenuBar(self._menu_bar)
+        self._create_main_menu()
+        self.setLayout(self._layout)
+
+    def _create_main_menu(self):
+        self._main_menu = self._menu_bar.addMenu("Main")
+        self._add_save_action()
+
+    def _add_save_action(self):
+        action = QAction("Save", self)
+        action.setShortcut("Ctrl+S")
+        action.triggered.connect(
+            lambda: client.send_event(Event(Event.SAVE_PARAMS)))
+        self._main_menu.addAction(action)
 
     def _add_controls(self):
-        self._layout = QGridLayout()
         self._track_controls = {}
         self._row = 0
         self._add_track_controls()
         self._add_bus_controls()
-        self.setLayout(self._layout)
 
     def _add_track_controls(self):
         for name, track in self._tracks.iteritems():
             self._add_track_control(track)
 
     def _add_track_control(self, track):
-        value = track["params"]["gain_adjustment"]
+        track_name = track["name"]
+        value = self._params["tracks"][track_name]["gain_adjustment"]
         gain_param = PARAMS_CONFIG["gain_adjustment"]
         gain_slider = self._create_slider()
         gain_slider.valueChanged.connect(
-            lambda value: self._slider_value_changed(track["name"], gain_param, value))
+            lambda value: self._slider_value_changed(track_name, gain_param, value))
         gain_label = QLabel()
         self._add_row([
-            QLabel(track["name"]), gain_slider, gain_label])
-        self._track_controls[track["name"]] = {"gain_label": gain_label}
+            QLabel(track_name), gain_slider, gain_label])
+        self._track_controls[track_name] = {"gain_label": gain_label}
         gain_slider.setValue(self._param_value_to_slider_value(gain_param, value))
 
     def _create_slider(self):
@@ -78,7 +96,7 @@ class MainWindow(QWidget):
 
     def received_event(self, event):
         if event.type == Event.CONTROLABLES:
-            self._tracks, self._buses = event.content
+            self._tracks, self._buses, self._params = event.content
             self._add_controls()
         else:
             raise Exception("unknown event type %r" % event.type)

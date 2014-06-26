@@ -8,6 +8,10 @@ from server import WebsocketServer, ClientHandler
 import threading
 from event import Event
 import collections
+import logging
+import cPickle
+
+PARAMS_FILENAME = "params.data"
 
 DEFAULT_SOUND_PARAMS = {
     "pan": 0,
@@ -24,7 +28,12 @@ DEFAULT_BUS_PARAMS = {
     "reverb_damp": 1}
 
 class Sequencer:
-    def __init__(self):
+    def __init__(self, logger=None):
+        if logger is None:
+            logger = logging.getLogger("Sequencer")
+        self.logger = logger
+        self._params = {"tracks": {},
+                        "buses": {}}
         self._sounds = {}
         self._tracks = collections.OrderedDict()
         self._buses = collections.OrderedDict()
@@ -42,10 +51,13 @@ class Sequencer:
     def get_buses(self):
         return self._buses
 
+    def get_params(self):
+        return self._params
+
     def play(self, sound, looped=0):
         track_name = self._sounds[sound]["track_name"]
         track = self._tracks[track_name]
-        params = track["params"]
+        params = self._params["tracks"][track_name]
         self._synth.play(
             sound,
             params["pan"],
@@ -83,8 +95,8 @@ class Sequencer:
         params.update(params_overrides)
         sounds = glob.glob(pattern)
         track = {"name": name,
-                 "sounds": sounds,
-                 "params": params}
+                 "sounds": sounds}
+        self._params["tracks"][name] = params
         for sound in sounds:
             self._sounds[sound]["track_name"] = name
         self._tracks[name] = track
@@ -97,13 +109,11 @@ class Sequencer:
 
     def add_bus(self, name):
         self._synth.add_bus(name)
-        self._buses[name] = {
-            "name": name,
-            "params": copy.copy(DEFAULT_BUS_PARAMS)
-            }
+        self._buses[name] = {"name": name}
+        self._params["buses"][name] = DEFAULT_BUS_PARAMS
 
     def set_bus_params(self, bus, new_params):
-        params = self._buses[bus]["params"]
+        params = self._params["buses"][bus]
         params.update(new_params)
         self._synth.set_bus_params(
             bus,
@@ -133,12 +143,14 @@ class Sequencer:
                 event.content["track"],
                 event.content["param"],
                 event.content["value"])
+        elif event.type == Event.SAVE_PARAMS:
+            self._save_params()
         else:
             self._log("WARNING: unknown event type %r" % event.type)
             
     def _set_param(self, track_name, param, value):
         track = self._tracks[track_name]
-        params = track["params"]
+        params = self._params["tracks"][track_name]
         params[param] = value
         for sound in track["sounds"]:
             if self._sounds[sound]["is_playing"]:
@@ -147,6 +159,15 @@ class Sequencer:
                                           params["gain"] + params["gain_adjustment"])
                     self._synth.set_param(sound, "send_gain",
                                           params["send_gain"] + params["gain_adjustment"])
+
+    def _save_params(self):
+        f = open(PARAMS_FILENAME, "w")
+        cPickle.dump(self._params, f)
+        f.close()
+        
+    def _log(self, string):
+        print string
+        self.logger.debug(string)
 
 
 class ControlPanelHandler(ClientHandler):
@@ -160,7 +181,8 @@ class ControlPanelHandler(ClientHandler):
     def _send_sounds(self):
         tracks = self._sequencer.get_tracks()
         buses = self._sequencer.get_buses()
-        self.send_event(Event(Event.CONTROLABLES, (tracks, buses)))
+        params = self._sequencer.get_params()
+        self.send_event(Event(Event.CONTROLABLES, (tracks, buses, params)))
 
     def received_event(self, event):
         self._sequencer.received_event(event)
