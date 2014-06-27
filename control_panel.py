@@ -55,6 +55,7 @@ class MainWindow(QWidget):
 
     def _add_calibrate_action(self):
         action = QAction("Calibrate", self)
+        action.setShortcut("Ctrl+E")
         action.triggered.connect(
             lambda: client.send_event(Event(Event.CALIBRATE_COLOUR)))
         self._main_menu.addAction(action)
