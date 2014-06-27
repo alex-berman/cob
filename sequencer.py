@@ -12,6 +12,7 @@ import logging
 import cPickle
 import os
 from colour_receiver import ColourReceiver
+import math
 
 PARAMS_FILENAME = "params.data"
 
@@ -23,12 +24,16 @@ DEFAULT_SOUND_PARAMS = {
     "send_gain": 0,
     "gain_adjustment": 0,
     "comp_threshold": 0,
+    "age_type": None,
     "rate": 1}
 
 DEFAULT_BUS_PARAMS = {
     "reverb_mix": 0,
     "reverb_room": 0,
     "reverb_damp": 1}
+
+RATE_MIN = 0.5
+RATE_MAX = 2.0
 
 class Sequencer:
     def __init__(self, logger=None):
@@ -58,6 +63,36 @@ class Sequencer:
 
     def set_current_colour(self, rgb):
         self._current_colour = rgb
+        if self._params["reference_colour"] is not None:
+            self._estimate_age()
+            self._set_age_dependent_rates()
+
+    def _estimate_age(self):
+        age = self._colour_distance(
+            self._current_colour, self._params["reference_colour"])
+        age = min(age, 1.0)
+        self._estimated_age = age
+        self.log("_estimated_age=%s" % self._estimated_age)
+
+    def _set_age_dependent_rates(self):
+        for track in self._tracks.values():
+            params = self._params["tracks"][track["name"]]
+            if params["age_type"] is not None:
+                params["rate"] = self._age_dependent_rate(params["age_type"])
+                self.log("rate %.1f for age_type=%s, track %s" % (
+                        params["rate"], params["age_type"], track["name"]))
+                self._on_track_params_changed(track)
+
+    def _age_dependent_rate(self, age_type):
+        if age_type == "decay":
+            return RATE_MIN + (RATE_MAX - RATE_MIN) * (1 - self._estimated_age)
+        else:
+            return RATE_MIN + (RATE_MAX - RATE_MIN) * self._estimated_age
+
+    def _colour_distance(self, colour1, colour2):
+        diffs = [colour1[n] - colour2[n]
+                 for n in range(3)]
+        return math.sqrt(sum([diff*diff for diff in diffs]))
 
     def calibrate_colour(self):
         self.log("calibrate_colour %s" % self._current_colour)

@@ -1,8 +1,9 @@
 from osc_receiver import OscReceiver
 import liblo
+import config
 
 class ColourReceiver(OscReceiver):
-    def __init__(self, port=32000):
+    def __init__(self, port=config.COLOUR_PORT):
         OscReceiver.__init__(self, port=port, proto=liblo.UDP)
         self.add_method("/colour", "fff", self._received_colour_message)
 

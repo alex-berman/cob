@@ -3,6 +3,9 @@
 MAG_PAN = -1
 HANNABIELL_PAN = 1
 
+MAG_AGE_TYPE = "decay"
+HANNABIELL_AGE_TYPE = "rejuvinate"
+
 from sequencer import Sequencer
 import logging
 
@@ -90,6 +93,7 @@ sequencer.add_track(
     {"send": "long_reverb",
      "gain": 2.1,
      "comp_threshold": -36.6,
+     "age_type": MAG_AGE_TYPE,
      "pan": MAG_PAN})
 sequencer.add_track(
     "mag breath",
@@ -97,6 +101,7 @@ sequencer.add_track(
     {"send": "long_reverb",
      "gain": 0,
      "comp_threshold": -36.6,
+     "age_type": MAG_AGE_TYPE,
      "pan": MAG_PAN})
 
 sequencer.add_group(
@@ -114,6 +119,7 @@ sequencer.add_track(
      "gain": -100,
      "comp_threshold": -36.6,
      "send_gain": 12.4,
+     "age_type": HANNABIELL_AGE_TYPE,
      "pan": HANNABIELL_PAN})
 
 sequencer.add_track(
@@ -122,6 +128,7 @@ sequencer.add_track(
     {"send": "long_reverb",
      "gain": -10.5,
      "comp_threshold": -30.8,
+     "age_type": HANNABIELL_AGE_TYPE,
      "pan": HANNABIELL_PAN})
 
 sequencer.add_track(
@@ -129,6 +136,7 @@ sequencer.add_track(
     "sound/hannabiell/fragment*.wav",
     {"send": "long_reverb",
      "gain": +11.7,
+     "age_type": HANNABIELL_AGE_TYPE,
      "pan": HANNABIELL_PAN})
 
 sequencer.add_track(
@@ -136,6 +144,7 @@ sequencer.add_track(
     "sound/hannabiell/squeak*.wav",
     {"send": "long_reverb",
      "gain": +0.3,
+     "age_type": HANNABIELL_AGE_TYPE,
      "pan": HANNABIELL_PAN})
 
 

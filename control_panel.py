@@ -74,7 +74,8 @@ class MainWindow(QWidget):
         row = [QLabel(track["name"])]
         self._track_controls[track["name"]] = {}
         self._add_track_param_control(row, track, "gain_adjustment")
-        self._add_track_param_control(row, track, "rate")
+        if self._params["tracks"][track["name"]]["age_type"] is None:
+            self._add_track_param_control(row, track, "rate")
         self._add_row(row)
 
     def _add_track_param_control(self, row, track, param_name):
