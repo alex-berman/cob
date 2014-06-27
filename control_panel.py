@@ -19,6 +19,11 @@ PARAMS_CONFIG = {
         {"min": 0.1,
          "max": 3.0,
          "width": 100},
+
+    "max_colour_distance":
+        {"min": 0.1,
+         "max": 3.0,
+         "width": 200},
     }
 
 class MainWindow(QWidget):
@@ -60,9 +65,22 @@ class MainWindow(QWidget):
             lambda: client.send_event(Event(Event.CALIBRATE_COLOUR)))
         self._main_menu.addAction(action)
 
+    def _add_global_controls(self):
+        value = self._params["max_colour_distance"]
+        controls = self._create_slider_controls(
+            PARAMS_CONFIG["max_colour_distance"],
+            value,
+            lambda v: self._global_param_value_changed(
+                "max_colour_distance", v, manually=True))
+        self._global_controls["max_colour_distance"] = controls
+        self._add_row([
+                QLabel("max colour distance"), controls["slider"], controls["label"]])
+            
     def _add_controls(self):
         self._track_controls = {}
+        self._global_controls = {}
         self._row = 0
+        self._add_global_controls()
         self._add_track_controls()
         self._add_bus_controls()
 
@@ -124,9 +142,22 @@ class MainWindow(QWidget):
         self._track_controls[track_name][param_name]["label"].setText("%.1f"%value)
         if manually:
             client.send_event(
-                Event(Event.SET_PARAM, {"track": track_name,
-                                        "param": param_name,
-                                        "value": value}))
+                Event(Event.SET_TRACK_PARAM,
+                      {"track": track_name,
+                       "param": param_name,
+                       "value": value}))
+
+    def _global_param_value_changed(self, param_name, value, manually=False):
+        if not manually:
+            param = PARAMS_CONFIG[param_name]
+            slider_value = self._param_value_to_slider_value(param, value)
+            self._global_controls[param_name]["slider"].setValue(slider_value)
+        self._global_controls[param_name]["label"].setText("%.1f"%value)
+        if manually:
+            client.send_event(
+                Event(Event.SET_GLOBAL_PARAM,
+                      {"param": param_name,
+                       "value": value}))
 
     def _slider_value_to_param_value(self, param, slider_value):
         return float(slider_value) / SLIDER_PRECISION * (param["max"] - param["min"]) + \

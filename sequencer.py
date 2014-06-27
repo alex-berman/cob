@@ -43,7 +43,8 @@ class Sequencer:
         self.logger = logger
         self._params = {"tracks": {},
                         "buses": {},
-                        "reference_colour": None}
+                        "reference_colour": None,
+                        "max_colour_distance": 1.0}
         self._sounds = {}
         self._tracks = collections.OrderedDict()
         self._buses = collections.OrderedDict()
@@ -74,7 +75,7 @@ class Sequencer:
     def _estimate_age(self):
         distance_to_reference = self._colour_distance(
             self._current_colour, self._params["reference_colour"])
-        age = distance_to_reference / config.MAX_COLOUR_DISTANCE
+        age = distance_to_reference / self._params["max_colour_distance"]
         age = min(age, 1.0)
         self._estimated_age = age
         # self.log("estimated age: %.2f" % self._estimated_age)
@@ -195,7 +196,10 @@ class Sequencer:
         server_thread.daemon = True
         server_thread.start()
 
-    def set_param(self, track_name, param, value):
+    def set_global_param(self, param, value):
+        self._params[param] = value
+
+    def set_track_param(self, track_name, param, value):
         track = self._tracks[track_name]
         params = self._params["tracks"][track_name]
         params[param] = value
@@ -251,9 +255,13 @@ class ControlPanelHandler(ClientHandler):
         self.send_event(Event(Event.CONTROLABLES, (tracks, buses, params)))
 
     def received_event(self, event):
-        if event.type == Event.SET_PARAM:
-            self._sequencer.set_param(
+        if event.type == Event.SET_TRACK_PARAM:
+            self._sequencer.set_track_param(
                 event.content["track"],
+                event.content["param"],
+                event.content["value"])
+        elif event.type == Event.SET_GLOBAL_PARAM:
+            self._sequencer.set_global_param(
                 event.content["param"],
                 event.content["value"])
         elif event.type == Event.SAVE_PARAMS:
