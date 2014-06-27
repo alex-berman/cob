@@ -13,6 +13,7 @@ import cPickle
 import os
 from colour_receiver import ColourReceiver
 import math
+import config
 
 PARAMS_FILENAME = "params.data"
 
@@ -71,8 +72,9 @@ class Sequencer:
                 control_panel.send_params()
 
     def _estimate_age(self):
-        age = self._colour_distance(
+        distance_to_reference = self._colour_distance(
             self._current_colour, self._params["reference_colour"])
+        age = distance_to_reference / config.MAX_COLOUR_DISTANCE
         age = min(age, 1.0)
         self._estimated_age = age
         # self.log("estimated age: %.2f" % self._estimated_age)
