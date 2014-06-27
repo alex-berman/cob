@@ -73,19 +73,20 @@ class MainWindow(QWidget):
     def _add_track_control(self, track):
         row = [QLabel(track["name"])]
         self._track_controls[track["name"]] = {}
+        rate_is_controlable = (self._params["tracks"][track["name"]]["age_type"] is None)
         self._add_track_param_control(row, track, "gain_adjustment")
-        if self._params["tracks"][track["name"]]["age_type"] is None:
-            self._add_track_param_control(row, track, "rate")
+        self._add_track_param_control(row, track, "rate", rate_is_controlable)
         self._add_row(row)
 
-    def _add_track_param_control(self, row, track, param_name):
+    def _add_track_param_control(self, row, track, param_name, controllable=True):
         track_name = track["name"]
         value = self._params["tracks"][track_name][param_name]
         param = PARAMS_CONFIG[param_name]
         slider = self._create_slider(param["width"])
-        slider.valueChanged.connect(
-            lambda value: self._slider_value_changed(track_name, param_name, value))
-        label = QLabel()
+        slider.setEnabled(controllable)
+        slider.sliderMoved.connect(
+            lambda v: self._slider_value_changed(track_name, param_name, v))
+        label = QLabel("%.1f" % value)
         self._track_controls[track_name][param_name] = {
             "slider": slider,
             "label": label}
@@ -110,15 +111,18 @@ class MainWindow(QWidget):
         self._param_value_changed(track_name, param_name, value, manually=True)
 
     def _param_value_changed(self, track_name, param_name, value, manually=False):
+        print "_param_value_changed(manually=%s, param_name=%s, track_name=%s)" % (
+            manually, param_name, track_name)
         if not manually:
             param = PARAMS_CONFIG[param_name]
             slider_value = self._param_value_to_slider_value(param, value)
             self._track_controls[track_name][param_name]["slider"].setValue(slider_value)
         self._track_controls[track_name][param_name]["label"].setText("%.1f"%value)
-        client.send_event(
-            Event(Event.SET_PARAM, {"track": track_name,
-                                    "param": param_name,
-                                    "value": value}))
+        if manually:
+            client.send_event(
+                Event(Event.SET_PARAM, {"track": track_name,
+                                        "param": param_name,
+                                        "value": value}))
 
     def _slider_value_to_param_value(self, param, slider_value):
         return float(slider_value) / SLIDER_PRECISION * (param["max"] - param["min"]) + \
@@ -146,10 +150,11 @@ class MainWindow(QWidget):
 
     def _params_changed(self):
         for track_name in self._tracks.keys():
-            self._param_value_changed(
-                track_name,
-                "gain_adjustment",
-                self._params["tracks"][track_name]["gain_adjustment"])
+            for param_name in PARAMS_CONFIG.keys():
+                self._param_value_changed(
+                    track_name,
+                    param_name,
+                    self._params["tracks"][track_name][param_name])
 
     def _add_row(self, cells):
         for column, cell in enumerate(cells):

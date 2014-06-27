@@ -48,6 +48,7 @@ class Sequencer:
         self._buses = collections.OrderedDict()
         self._groups = []
         self._scheduler = Scheduler()
+        self.control_panels = set()
         self._setup_colour_receiver()
         SynthController.kill_potential_engine_from_previous_process()
         self._synth = SynthController()
@@ -66,6 +67,8 @@ class Sequencer:
         if self._params["reference_colour"] is not None:
             self._estimate_age()
             self._set_age_dependent_rates()
+            for control_panel in self.control_panels:
+                control_panel.send_params()
 
     def _estimate_age(self):
         age = self._colour_distance(
@@ -229,10 +232,15 @@ class Sequencer:
 class ControlPanelHandler(ClientHandler):
     def __init__(self, *args, **kwargs):
         self._sequencer = kwargs.pop("sequencer")
+        self._sequencer.control_panels.add(self)
         super(ControlPanelHandler, self).__init__(*args, **kwargs)
 
     def open(self):
         self._send_sounds()
+
+    def on_close(self):
+        print "control panel closed down"
+        self._sequencer.control_panels.remove(self)
 
     def _send_sounds(self):
         tracks = self._sequencer.get_tracks()
@@ -250,11 +258,14 @@ class ControlPanelHandler(ClientHandler):
             self._sequencer.save_params()
         elif event.type == Event.LOAD_PARAMS:
             self._sequencer.load_params()
-            self.send_event(Event(Event.PARAMS, self._sequencer.get_params()))
+            self.send_params()
         elif event.type == Event.CALIBRATE_COLOUR:
             self._sequencer.calibrate_colour()
         else:
             self._sequencer.log("WARNING: unknown event type %r" % event.type)
+
+    def send_params(self):
+        self.send_event(Event(Event.PARAMS, self._sequencer.get_params()))
 
 
 PLAYING, IDLE, WAITING_TO_PLAY = range(3)
