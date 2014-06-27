@@ -184,12 +184,22 @@ class MainWindow(QWidget):
             raise Exception("unknown event type %r" % event.type)
 
     def _params_changed(self):
+        self._track_params_changed()
+        self._global_params_changed()
+
+    def _track_params_changed(self):
         for track_name in self._tracks.keys():
             for param_name in ["gain_adjustment", "rate"]:
                 self._track_param_value_changed(
                     track_name,
                     param_name,
                     self._params["tracks"][track_name][param_name])
+
+    def _global_params_changed(self):
+        for param_name in ["max_colour_distance"]:
+            self._global_param_value_changed(
+                param_name,
+                self._params[param_name])
 
     def _add_row(self, cells):
         for column, cell in enumerate(cells):
