@@ -72,15 +72,15 @@ class Sequencer:
             self._current_colour, self._params["reference_colour"])
         age = min(age, 1.0)
         self._estimated_age = age
-        self.log("_estimated_age=%s" % self._estimated_age)
+        self.log("estimated age: %.2f" % self._estimated_age)
 
     def _set_age_dependent_rates(self):
         for track in self._tracks.values():
             params = self._params["tracks"][track["name"]]
             if params["age_type"] is not None:
                 params["rate"] = self._age_dependent_rate(params["age_type"])
-                self.log("rate %.1f for age_type=%s, track %s" % (
-                        params["rate"], params["age_type"], track["name"]))
+                # self.log("rate %.1f for age_type=%s, track %s" % (
+                #         params["rate"], params["age_type"], track["name"]))
                 self._on_track_params_changed(track)
 
     def _age_dependent_rate(self, age_type):
