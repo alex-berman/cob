@@ -46,7 +46,7 @@ sequencer.add_track(
     "sound/water/Sound 2 mindre rinn.wav",
     {"send": "long_reverb",
      "gain": 7.8,
-     "rate": 0.5,
+     "rate": 1.0,
      })
 sequencer.add_track(
     "bubbles1",
