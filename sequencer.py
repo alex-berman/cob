@@ -75,7 +75,7 @@ class Sequencer:
             self._current_colour, self._params["reference_colour"])
         age = min(age, 1.0)
         self._estimated_age = age
-        self.log("estimated age: %.2f" % self._estimated_age)
+        # self.log("estimated age: %.2f" % self._estimated_age)
 
     def _set_age_dependent_rates(self):
         for track in self._tracks.values():
