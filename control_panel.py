@@ -74,26 +74,32 @@ class MainWindow(QWidget):
     def _add_track_control(self, track):
         row = [QLabel(track["name"])]
         self._track_controls[track["name"]] = {}
-        rate_is_controlable = (self._params["tracks"][track["name"]]["age_type"] is None)
+        rate_is_controllable = (self._params["tracks"][track["name"]]["age_type"] is None)
         self._add_track_param_control(row, track, "gain_adjustment")
-        self._add_track_param_control(row, track, "rate", rate_is_controlable)
+        self._add_track_param_control(row, track, "rate", rate_is_controllable)
         self._add_row(row)
 
     def _add_track_param_control(self, row, track, param_name, controllable=True):
-        track_name = track["name"]
-        value = self._params["tracks"][track_name][param_name]
-        param = PARAMS_CONFIG[param_name]
+        value = self._params["tracks"][track["name"]][param_name]
+        controls = self._create_slider_controls(
+            PARAMS_CONFIG[param_name],
+            value,
+            lambda v: self._track_param_value_changed(
+                track["name"], param_name, v, manually=True),
+            controllable)
+        self._track_controls[track["name"]][param_name] = controls
+        row.append(controls["slider"])
+        row.append(controls["label"])
+
+    def _create_slider_controls(self, param, value, on_changed, controllable=True):
         slider = self._create_slider(param["width"])
         slider.setEnabled(controllable)
         slider.sliderMoved.connect(
-            lambda v: self._slider_value_changed(track_name, param_name, v))
+            lambda v: self._slider_value_changed(on_changed, param, v))
         label = QLabel("%.1f" % value)
-        self._track_controls[track_name][param_name] = {
-            "slider": slider,
-            "label": label}
         slider.setValue(self._param_value_to_slider_value(param, value))
-        row.append(slider)
-        row.append(label)
+        return {"slider": slider,
+                "label": label}
 
     def _create_slider(self, width):
         slider = QSlider(Qt.Horizontal)
@@ -106,12 +112,11 @@ class MainWindow(QWidget):
         return int(float(value - param["min"]) / (
                 param["max"] - param["min"]) * SLIDER_PRECISION)
 
-    def _slider_value_changed(self, track_name, param_name, slider_value):
-        param = PARAMS_CONFIG[param_name]
+    def _slider_value_changed(self, on_changed, param, slider_value):
         value = self._slider_value_to_param_value(param, slider_value)
-        self._param_value_changed(track_name, param_name, value, manually=True)
+        on_changed(value)
 
-    def _param_value_changed(self, track_name, param_name, value, manually=False):
+    def _track_param_value_changed(self, track_name, param_name, value, manually=False):
         if not manually:
             param = PARAMS_CONFIG[param_name]
             slider_value = self._param_value_to_slider_value(param, value)
@@ -149,8 +154,8 @@ class MainWindow(QWidget):
 
     def _params_changed(self):
         for track_name in self._tracks.keys():
-            for param_name in PARAMS_CONFIG.keys():
-                self._param_value_changed(
+            for param_name in ["gain_adjustment", "rate"]:
+                self._track_param_value_changed(
                     track_name,
                     param_name,
                     self._params["tracks"][track_name][param_name])
