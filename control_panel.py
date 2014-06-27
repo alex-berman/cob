@@ -111,8 +111,6 @@ class MainWindow(QWidget):
         self._param_value_changed(track_name, param_name, value, manually=True)
 
     def _param_value_changed(self, track_name, param_name, value, manually=False):
-        print "_param_value_changed(manually=%s, param_name=%s, track_name=%s)" % (
-            manually, param_name, track_name)
         if not manually:
             param = PARAMS_CONFIG[param_name]
             slider_value = self._param_value_to_slider_value(param, value)

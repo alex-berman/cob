@@ -18,7 +18,7 @@ class WebsocketClient(ws4py.client.threadedclient.WebSocketClient):
 
     def received_message(self, message):
         event = cPickle.loads(str(message))
-        print "got from server: %s" % event
+        # print "got from server: %s" % event
         self.received_event(event)
 
     def received_event(self, event):
