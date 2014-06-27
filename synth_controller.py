@@ -61,7 +61,10 @@ class SynthController:
         self._sounds_info = {}
         if not self._sc_listener:
             self._sc_listener = OscReceiver(proto=liblo.TCP, name="SynthController")
-            self._sc_listener.add_method("/loaded", "sii", self._handle_loaded)
+            self._sc_listener.add_method(
+                "/loaded", "sii", self._handle_loaded)
+            self._sc_listener.add_method(
+                "/stopped_playing", "s", self._handle_stopped_playing)
             self._sc_listener.start()
         self._send("/info_subscribe", self._sc_listener.port)
 
@@ -101,14 +104,20 @@ class SynthController:
                 self._sc_listener.serve()
                 time.sleep(0.01)
 
-    def _handle_loaded(self,path, args, types, src, data):
+    def _handle_loaded(self, path, args, types, src, data):
         filename, num_frames, sample_rate = args
         print "got /loaded %s" % args
         duration = float(num_frames) / sample_rate
         print "duration=%s" % duration
         self._sounds_info[filename] = {
-            "duration": duration
+            "duration": duration,
+            "is_playing": False
             }
+
+    def _handle_stopped_playing(self, path, args, types, src, data):
+        sound = args[0]
+        self._sounds_info[sound]["is_playing"] = False
+        print "stopped playing %s" % sound
 
     def play(self, sound, pan, fade, gain, rate, looped, send, send_gain, comp_threshold):
         if fade is None:
@@ -119,9 +128,13 @@ class SynthController:
 
         self._send(
             "/play", sound, pan, fade, gain, rate, looped, send, send_gain, comp_threshold)
+        self._sounds_info[sound]["is_playing"] = True
 
     def get_duration(self, sound):
         return self._sounds_info[sound]["duration"]
+
+    def is_playing(self, sound):
+        return self._sounds_info[sound]["is_playing"]
 
     def add_bus(self, name):
         self._send("/add_bus", name)
@@ -139,3 +152,6 @@ class SynthController:
 
     def set_param(self, sound, param, value):
         self._send("/set_%s" % param, sound, value)
+
+    def process(self):
+        self._sc_listener.serve()

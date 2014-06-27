@@ -122,20 +122,12 @@ class Sequencer:
             params["send"],
             params["send_gain"] + params["gain_adjustment"],
             params["comp_threshold"])
-        self._sounds[sound]["is_playing"] = True
-        if looped == 0:
-            self.schedule(
-                action=lambda: self._stopped_playing(sound),
-                delay=self._synth.get_duration(sound))
 
     def schedule(self, action, delay):
         self._scheduler.schedule(action, delay)
 
     def is_playing(self, sound):
-        return self._sounds[sound]["is_playing"]
-
-    def _stopped_playing(self, sound):
-        self._sounds[sound]["is_playing"] = False
+        return self._synth.is_playing(sound)
 
     def load_sounds(self, pattern):
         for sound in glob.glob(pattern):
@@ -143,7 +135,7 @@ class Sequencer:
 
     def load_sound(self, sound):
         self._synth.load_sound(sound)
-        self._sounds[sound] = {"is_playing": False}
+        self._sounds[sound] = {}
 
     def add_track(self, name, pattern, params_overrides):
         params = copy.copy(DEFAULT_SOUND_PARAMS)
@@ -186,6 +178,7 @@ class Sequencer:
             time.sleep(.1)
 
     def _process(self):
+        self._synth.process()
         self._scheduler.run_scheduled_events()
         self._colour_receiver.serve()
         for group in self._groups:
@@ -210,7 +203,7 @@ class Sequencer:
     def _on_track_params_changed(self, track):
         params = self._params["tracks"][track["name"]]
         for sound in track["sounds"]:
-            if self._sounds[sound]["is_playing"]:
+            if self.is_playing(sound):
                 self._synth.set_param(sound, "gain",
                                       params["gain"] + params["gain_adjustment"])
                 self._synth.set_param(sound, "send_gain",

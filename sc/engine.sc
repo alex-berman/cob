@@ -146,6 +146,12 @@ OSCresponder.new(nil, "/play", {
 				"WARNING: can't play sound with numChannels=".post; buf.numChannels.postln;
 			});
 		});
+		~synths[name].onFree({
+			if(~info_subscriber != nil, {
+				~info_subscriber.sendMsg(
+					"/stopped_playing", name);
+			});
+		});			
 	});
 }).add; 
 
