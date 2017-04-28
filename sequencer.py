@@ -33,8 +33,11 @@ DEFAULT_BUS_PARAMS = {
     "reverb_room": 0,
     "reverb_damp": 1}
 
-RATE_MIN = 0.5
-RATE_MAX = 2.0
+# RATE_MIN = 0.5
+# RATE_MAX = 2.0
+
+RATE_MIN = 1
+RATE_MAX = 1
 
 class Sequencer:
     def __init__(self, logger=None):

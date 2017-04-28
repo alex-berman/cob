@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-MAG_PAN = -1
-HANNABIELL_PAN = 1
+STEREO_WIDTH = .2
+
+MAG_PAN = -1 * STEREO_WIDTH
+HANNABIELL_PAN = 1 * STEREO_WIDTH
 
 MAG_AGE_TYPE = "decay"
 HANNABIELL_AGE_TYPE = "rejuvinate"
@@ -106,8 +108,8 @@ sequencer.add_track(
 
 sequencer.add_group(
     "sound/mag/*.wav",
-    {"silence_min": 20,
-     "silence_max": 60})
+    {"silence_min": 15,
+     "silence_max": 40})
 
 
 # Hannabiell
@@ -150,8 +152,8 @@ sequencer.add_track(
 
 sequencer.add_group(
     "sound/hannabiell/*.wav",
-    {"silence_min": 20,
-     "silence_max": 60})
+    {"silence_min": 15,
+     "silence_max": 40})
 
 
 # Run everything
